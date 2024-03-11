@@ -19,7 +19,7 @@ const authenticateUser = async(req,res,next)=>{
     }
 }
 
-const authorizeUser = ()=>{
+const authorizeUser = (permittedRoles)=>{
     return (req,res,next)=>{
         if(permittedRoles.includes(req.user.role)){
              next()

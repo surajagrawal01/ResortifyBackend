@@ -63,28 +63,39 @@ const upload = multer({storage})
 
 // property controlller
 const propertyController = require('./App/controllers/property-controller')
+//amenity controller
+const amenityController = require('./App/controllers/amenities-controller')
+
 // property validation schema
 const propertyValidationSchema = require('./App/validations/property-validations')
+//amenities validation schema
+const amenititiesValidationSchema = require('./App/validations/amenities-validations')
 
 //get all the resorts
 app.get('/api/users/resorts',propertyController.list)
 // get one resort
 app.get('/api/users/resorts/:id',propertyController.listOne)
 // create the resort
-app.post('/api/owners/propertydetails',upload.single('file'),checkSchema(propertyValidationSchema ),propertyController.create)
+app.post('/api/owners/propertydetails',authenticateUser,authorizeUser(['owner']),upload.single('file'),propertyController.create)
 //update the resort
-app.put('/api/owners/propertydetails/:id',propertyController.update)
+app.put('/api/owners/propertydetails/:id',authenticateUser,authorizeUser(['owner']),propertyController.update)
 //delete the resort
-app.delete('/api/owners/propertydetails/:id',propertyController.delete)
+app.delete('/api/owners/propertydetails/:id',authenticateUser,authorizeUser(['owner']),propertyController.delete)
+
+
+// post amenities
+app.post('/api/owners/amenities',authenticateUser,authorizeUser(['admin']),checkSchema(amenititiesValidationSchema),amenityController.create)
+// update amenities
+app.put('/api/owners/amenities/:id',authenticateUser,authorizeUser(['admin']),checkSchema(amenititiesValidationSchema),amenityController.update)
+// delete amenities
+app.delete('/api/owners/amenities/:id',authenticateUser,authorizeUser(['admin']),amenityController.destroy)
+//list all amenities 
+app.get('/api/owners/amenities',authenticateUser,authorizeUser(['owner','admin']),amenityController.list)
+//list one
+app.get('/api/owners/amenities/:id',authenticateUser,authorizeUser(['owner','admin']),amenityController.listOne)
 
 
 
-
-
-//sufal
-
-
-//listening requests
 app.listen(port, ()=>{
     console.log('Server runnning on port'+port)
 })

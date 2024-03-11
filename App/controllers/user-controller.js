@@ -66,7 +66,6 @@ userCntrl.create = async (req, res) => {
             const otp = generateOTP()
             user.otp = otp
             sendMail(user.email, user.otp)
-            console.log('mailsend')
         }
         {
             const countRecords = await User.countDocuments()
@@ -244,7 +243,6 @@ userCntrl.login = async(req,res)=>{
             return res.status(404).json({error:'invali EmailId/Password'})
         }
         const checkPassword = await bcryptjs.compare(password, user.password)
-        console.log(checkPassword)
         if(!checkPassword){
             return res.status(404).json({error:'invalid EmailId/Password'})
         }

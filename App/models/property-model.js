@@ -11,7 +11,6 @@ const propertySchema = new Schema({
                package:String,
                price:String
             }],
-    contactNumber:String,
     ownerEmail:String,
     isApproved:{
         type:Boolean,
@@ -30,7 +29,7 @@ const propertySchema = new Schema({
         lat:String,
         lng:String
     },
-    propertyAmenities:[String], // change this to mongo ids
+    propertyAmenities:[Schema.Types.ObjectId], 
     propertyPhotos:String,
     isDeleted:{
         type:Boolean,
