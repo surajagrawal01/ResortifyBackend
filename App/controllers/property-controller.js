@@ -1,4 +1,7 @@
 const Property = require('../models/property-model')
+const GenrealPropertyModel = require("../models/general-property-model")
+const RoomType = require('../models/roomType-model')
+const Room = require('../models/room-model')
 const {validationResult} = require('express-validator')
 const _ = require('lodash')
 const propertyController = {}
@@ -22,15 +25,51 @@ propertyController.create=async(req,res)=>{
     if(!errors.isEmpty()){
         return res.status(400).json({error:errors.array()})
     }
-    const body = _.pick(req.body,['totalRooms','propertyName','propertyBuiltDate','packages','contactNumber','ownerEmail','location','geoLocation','propertyAmenities','propertyPhotos'])
- 
+    const body = _.pick(req.body,['totalRooms',
+                                    'propertyName',
+                                    'propertyBuiltDate',
+                                    'packages',
+                                    'contactNumber',
+                                    'ownerEmail',
+                                    'location',
+                                    'geoLocation'
+                                    ,'propertyAmenities'
+                                    ,'propertyPhotos'])
+    const generalmodelData =  _.pick(req.body,['bookingPolicies',
+                                                'cancellationPolicies',
+                                                'refundPolicies',
+                                                'propertyRules',
+                                                'financeAndLegal',
+                                                'bankingDetails'])
+
+    const {roomTypesData} = req.body
+        
     try{
         const property = new Property(body)
-        // property.propertyPhotos = req.file.filename
+
+        // property.propertyPhotos = req.file.filename //multer is remaining
         // console.log(req.file.filename)
-        // property.ownerId = req.user.id
+        property.ownerId = req.user.id
+        const generalModel = new GenrealPropertyModel(generalmodelData)
+        
+        generalModel.propertyId = property._id
+
+        // creating types of rooms
+        roomTypesData.forEach(async(ele)=>{
+            const roomType = new RoomType(ele)
+            roomType.propertyId = property._id
+            for(let i =0; i< ele.NumberOfRooms; i++){
+                Room.create({roomTypeId:roomType._id,type:ele.roomType})
+             }
+            await roomType.save()
+        })
+       
+
+        const roomTypes = await RoomType.find()
         await property.save()
-        res.status(201).json(property)
+        await generalModel.save()
+
+        res.status(201).json({property,generalModel,roomTypes}) //destructuring to display all the detal
 
     }catch(err){
         console.log(err)
@@ -42,13 +81,37 @@ propertyController.create=async(req,res)=>{
 //update the information of resorts
 propertyController.update =async(req,res)=>{
     const {id} = req.params
-    const {body} = req
-    try{
-        const property = await Property.findOneAndUpdate({_id:id},body,{new:true})
-        if(!property){
+    const body = _.pick(req.body,['totalRooms',
+                                    'propertyName',
+                                    'propertyBuiltDate',
+                                    'packages',
+                                    'contactNumber',
+                                    'ownerEmail',
+                                    'location',
+                                    'geoLocation'
+                                    ,'propertyAmenities'
+                                    ,'propertyPhotos'])
+const generalmodelData =  _.pick(req.body,['bookingPolicies',
+                                            'cancellationPolicies',
+                                            'refundPolicies',
+                                            'propertyRules',
+                                            'financeAndLegal',
+                                            'bankingDetails'])
+
+const {roomTypesData} = req.body
+    try{ 
+
+         const property = await Property.findOneAndUpdate({_id:id},body,{new:true})
+          if(!property){
            return  res.status(404).json({error:'record not found!'})
-        }
-        res.json(property)
+        }  
+        const roomdetails = await RoomType.findOne({propertyId:property._id}) //find unupdated room details 
+        console.log(roomdetails)
+        const updatedRoom = await RoomType.findOneAndUpdate({propertyId:property._id},roomTypesData,{new :true})
+        const generalModel = await GenrealPropertyModel.findOneAndUpdate({propertyId:property._id},generalmodelData,{new :true})
+       
+      
+       res.json({property,updatedRoom,generalModel})
     }catch(err){
         console.log(err)
         res.status(500).json({error:'internal server error'})
@@ -87,7 +150,10 @@ propertyController.listOne =async(req,res)=>{
     const {id} = req.params  // req.user.id
     try{
         const property = await Property.findOne({_id:id})
-        res.json(property)
+        const rooms = await Room.find({propertyId:property._id})
+        const generalProperyData = await GenrealPropertyModel.findOne({propertyId:property._id})
+        const roomtypes = await RoomType.find({roomTypeId:rooms._id})
+        res.json({property,rooms,generalProperyData,roomtypes})
     }catch(err){
         console.log(err)
         res.status(500).json({error:'internal server error'})
