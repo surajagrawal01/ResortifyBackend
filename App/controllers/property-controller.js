@@ -10,7 +10,7 @@ const propertyController = {}
 // list the resorts
 propertyController.list =async(req,res)=>{
     try{
-        const properties = await Property.find({isDeleted:false})
+        const properties = await Property.find({isDeleted:false}) // find using isapproved 
         res.json(properties)
     }catch(err){
         console.log(err)
@@ -55,17 +55,18 @@ propertyController.create=async(req,res)=>{
         generalModel.propertyId = property._id
 
         // creating types of rooms
-        roomTypesData.forEach(async(ele)=>{
-            const roomType = new RoomType(ele)
-            roomType.propertyId = property._id
-            for(let i =0; i< ele.NumberOfRooms; i++){
-                Room.create({roomTypeId:roomType._id,type:ele.roomType})
-             }
-            await roomType.save()
+        const totalRoomTypes =[]
+        roomTypesData.forEach( ele =>{
+                totalRoomTypes.push({...ele,propertyId:property._id})
         })
-       
-
+        await RoomType.insertMany(totalRoomTypes)
         const roomTypes = await RoomType.find()
+        roomTypes.forEach(async(ele) =>{
+            for(let i=0; i< ele.NumberOfRooms;i++){
+              await Room.create({roomTypeId:ele._id,type:ele.roomType})  
+            }
+        })
+        
         await property.save()
         await generalModel.save()
 
@@ -99,19 +100,16 @@ const generalmodelData =  _.pick(req.body,['bookingPolicies',
                                             'bankingDetails'])
 
 const {roomTypesData} = req.body
+console.log(roomTypesData)
     try{ 
 
          const property = await Property.findOneAndUpdate({_id:id},body,{new:true})
           if(!property){
            return  res.status(404).json({error:'record not found!'})
         }  
-        const roomdetails = await RoomType.findOne({propertyId:property._id}) //find unupdated room details 
-        console.log(roomdetails)
-        const updatedRoom = await RoomType.findOneAndUpdate({propertyId:property._id},roomTypesData,{new :true})
         const generalModel = await GenrealPropertyModel.findOneAndUpdate({propertyId:property._id},generalmodelData,{new :true})
        
-      
-       res.json({property,updatedRoom,generalModel})
+       res.json({property,generalModel})
     }catch(err){
         console.log(err)
         res.status(500).json({error:'internal server error'})
@@ -150,10 +148,10 @@ propertyController.listOne =async(req,res)=>{
     const {id} = req.params  // req.user.id
     try{
         const property = await Property.findOne({_id:id})
-        const rooms = await Room.find({propertyId:property._id})
+        const roomTypes= await RoomType.find({propertyId:property._id})
         const generalProperyData = await GenrealPropertyModel.findOne({propertyId:property._id})
-        const roomtypes = await RoomType.find({roomTypeId:rooms._id})
-        res.json({property,rooms,generalProperyData,roomtypes})
+        
+        res.json({property,generalProperyData,roomTypes})
     }catch(err){
         console.log(err)
         res.status(500).json({error:'internal server error'})
