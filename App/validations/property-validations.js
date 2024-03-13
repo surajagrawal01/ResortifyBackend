@@ -276,108 +276,22 @@ const propertyValidationSchema = {
             }
         }
     },
-    rooms:{
-        isArray:{
-            errorMessage:'rooms is an array'
-        },
-        custom:{
-            options:function(value){
-                if(value.length ==0){
-                    throw new Error('rooms cannot be empty')
-                }
-                value.forEach(ele =>{
-                    if(Object.keys(ele).length !== 2){
-                        throw new Error('rooms should contain number of rooms and type ')
-                    }
-                })
-                return true
-            }
-        }
-    },
-    // 'rooms.NumberOfRooms':{
-    //     exists:{
-    //         errorMessage:'number of rooms is required'
-    //     },
-    //     isNumeric:{
-    //         errorMessage:'number of rooms expects a number'
-    //     }
-
-    // },
-    roomDescription:{
-        exists:{
-            errorMessage:'room description field is required'
-        }
-    },
-    baseRoomPrice:{
-        exists:{
-            errorMessage:'base room price field is required'
-        },
-        notEmpty:{
-            errorMessage:'base room price is required'
-        },
-        isNumeric:{
-            errorMessage:'room price is a number '
-        }
-    },
-    availability:{
-        isObject:{
-            errorMessage:'availability is an object'
-        },
-        custom:{
-            options: function(value){
-                if(Object.keys(value).length !== 2){
-                    throw new Error('availability has two fields start and end date')
-                }
-                return true
-            }
-        }
-    },
-    'availability.startDate':{
-        exists:{
-            errorMessage:'start date field is required'
-        },
-        notEmpty:{
-            errorMessage:'startDate is required'
-        },
-        isDate:{
-            errorMessage:'enter valid date format'
-        }
-    },
-    'availability.endDate':{
-        exists:{
-            errorMessage:'end date field is required'
-        },
-        notEmpty:{
-            errorMessage:'end date is required'
-        },
-        isDate:{
-            errorMessage:'enter valid date format'
-        }
-    },
-    roomAmentities:{
-        exists:{
-            errorMessage:'amenitites field is required'
-        },
-    notEmpty:{
-        errorMessage:'* amenities is required'
-    },
+   roomTypesData:{
     isArray:{
-        errorMessage:'room amenity should be an array'
+        errorMessage:'room types should be an array'
     },
     custom:{
-        options:function(value){
-                if(value.length === 0){
-                throw new Error('room amenities cannot be empty')
+        options: function(value){
+            if(value.length === 0){
+                throw new Error('room types cannot be empty atleast add one')
             }
-            value.forEach(ele =>{
-                if(!mongoose.Types.ObjectId.isValid(ele)){
-                    throw new Error('not a valid mongoose id')
+            value.forEach( ele =>{
+                if(typeof(ele) !== "object"){
+                    throw new Error('room types must contain an object')
                 }
             })
-            
-        return true
         }
-    } 
     }
+   },
 }
 module.exports = propertyValidationSchema
