@@ -65,19 +65,30 @@ const upload = multer({storage})
 const propertyController = require('./App/controllers/property-controller')
 //amenity controller
 const amenityController = require('./App/controllers/amenities-controller')
+
+
 // room controller
 const roomController = require('./App/controllers/room-controller')
 // reviews
 const reviewController = require('./App/controllers/reviews-controller')
 
+//booking-controller
+const bookingCntrl = require("./App/controllers/booking-controller")
+
+
 // property validation schema
 const propertyValidationSchema = require('./App/validations/property-validations')
 //amenities validation schema
 const amenititiesValidationSchema = require('./App/validations/amenities-validations')
+
 // room validation schema
 const roomValidationSchema = require('./App/validations/room-validations')
 // review validation schema
 const reviewValidationSchema = require('./App/validations/review-validations')
+
+//booking validation schema 
+const bookingValidaton = require('./App/validations/booking-validation')
+
 
 //get all the resorts
 app.get('/api/users/resorts',propertyController.list)
@@ -108,6 +119,7 @@ app.get('/api/owners/amenities',authenticateUser,authorizeUser(['owner','admin']
 //list one amentity
 app.get('/api/owners/amenities/:id',authenticateUser,authorizeUser(['owner','admin']),amenityController.listOne)
 
+
 //get all reviews 
 app.get('/api/users/reviews/:id',reviewController.list)
 //get one review 
@@ -118,6 +130,20 @@ app.post('/api/users/reviews/:id',authenticateUser,authorizeUser(['user']),check
 app.put('/api/users/reviews/:id',authenticateUser,authorizeUser(['user']),checkSchema(reviewValidationSchema),reviewController.update)
 //  delete a review
 app.delete('/api/users/reviews/:id',authenticateUser,authorizeUser(['user']),reviewController.delete)
+
+//bookingCntollers
+//for booking 
+app.post('/api/bookings', authenticateUser, authorizeUser(['user']),checkSchema(bookingValidaton), bookingCntrl.create)
+//for changing booking status
+app.put('/api/bookings/:id', authenticateUser, authorizeUser(['owner']),  bookingCntrl.changeStatus)
+//for changing checkedIn checkedOut
+app.put('/api/bookings/in-out/:id', authenticateUser, authorizeUser(['owner']), bookingCntrl.changeCheckInOut )
+//for cancellation
+app.put('/api/bookings/cancellation/:id', authenticateUser, authorizeUser(['user']), bookingCntrl.cancellation )
+//for all bookings
+app.get('/api/bookings', authenticateUser, authorizeUser(['owner']), bookingCntrl.listBookings )
+
+
 
 app.listen(port, ()=>{
     console.log('Server runnning on port'+" "+port)
