@@ -5,6 +5,7 @@ const multer = require('multer') //require multer
 const cors = require("cors")
 const app = express()
 
+app.use(cors())
 app.use(express.json())
 
 const port = 3060
@@ -21,7 +22,10 @@ const {authorizeUser, authenticateUser} = require("./App/middleware/auth")
 const {userRegistrationValidation, 
     verifyEmailValidationSchema, 
     resendOTPEmailValidationSchema, 
-    loginValidationSchema} = require("./App/validations/user-validaiton")
+    loginValidationSchema, 
+    forgotPasswordValidation,
+    userUpdatingDetailsValidationSchema,
+    userUpdatingPassword} = require("./App/validations/user-validaiton")
 
 
 //controllers
@@ -30,19 +34,19 @@ const userCntrl = require("./App/controllers/user-controller")
 //routes users
 app.post('/api/users',checkSchema(userRegistrationValidation), userCntrl.create )
 app.post('/api/users/verifyEmail',checkSchema(verifyEmailValidationSchema), userCntrl.verifyEmail)
-//for reverification of email while login and for forgot password mail to verify mail
+//for reverification of email while login if not verified and for forgot password mail to verify mail
 app.post('/api/users/reVerifiyEmail',checkSchema(resendOTPEmailValidationSchema), userCntrl.resendOTP)
 //for forgot password -> mail and otp and new password 
-app.put('/api/users/forgotPassword',userCntrl.forgotPassword )
+app.put('/api/users/forgotPassword', checkSchema(forgotPasswordValidation), userCntrl.forgotPassword )
 app.post('/api/users/login', checkSchema(loginValidationSchema), userCntrl.login)
 //for update
-app.put('/api/users', authenticateUser , userCntrl.update)
+app.put('/api/users', authenticateUser ,checkSchema(userUpdatingDetailsValidationSchema), userCntrl.update)
 //for delete
 app.delete('/api/users', authenticateUser, userCntrl.destroy)
 //for updating password
-app.put('/api/users/updatePassword', authenticateUser, userCntrl.updatePassword)
-//for lists
-app.get('/api/users',userCntrl.lists)
+app.put('/api/users/updatePassword', authenticateUser, checkSchema(userUpdatingPassword), userCntrl.updatePassword)
+//for all users lists
+app.get('/api/users',authenticateUser, authorizeUser(['admin']),userCntrl.lists)
 //for account
 app.get('/api/users/account', authenticateUser, userCntrl.account)
 
@@ -88,7 +92,7 @@ const roomValidationSchema = require('./App/validations/room-validations')
 const reviewValidationSchema = require('./App/validations/review-validations')
 
 //booking validation schema 
-const bookingValidaton = require('./App/validations/booking-validation')
+const {bookingValidaton, updateStatusValidation, updateCheckInOutValidation, bookingCancelSchema} = require('./App/validations/booking-validation')
 
 
 //get all the resorts
@@ -136,16 +140,24 @@ app.delete('/api/users/reviews/:id',authenticateUser,authorizeUser(['user']),rev
 //for booking 
 app.post('/api/bookings', authenticateUser, authorizeUser(['user']),checkSchema(bookingValidaton), bookingCntrl.create)
 //for changing booking status
-app.put('/api/bookings/:id', authenticateUser, authorizeUser(['owner']),  bookingCntrl.changeStatus)
+app.put('/api/bookings/:id', authenticateUser, authorizeUser(['owner']), checkSchema(updateStatusValidation),  bookingCntrl.changeStatus)
 //for changing checkedIn checkedOut
-app.put('/api/bookings/in-out/:id', authenticateUser, authorizeUser(['owner']), bookingCntrl.changeCheckInOut )
+app.put('/api/bookings/in-out/:id', authenticateUser, authorizeUser(['owner']), checkSchema(updateCheckInOutValidation), bookingCntrl.changeCheckInOut )
 //for cancellation
-app.put('/api/bookings/cancellation/:id', authenticateUser, authorizeUser(['user']), bookingCntrl.cancellation )
+app.put('/api/bookings/cancellation/:id', authenticateUser, authorizeUser(['user']), checkSchema(bookingCancelSchema), bookingCntrl.cancellation )
 //for all bookings
 app.get('/api/bookings', authenticateUser, authorizeUser(['owner']), bookingCntrl.listBookings )
+//for one booking
+app.get('/api/bookings/:id', bookingCntrl.listOne )
 
 
+//paymentCNtrl 
+const paymentsCltr = require('./App/controllers/paymentController')
 
+// app.post('/api/create-checkout-session',authenticateUser, authorizeUser(['user']), paymentsCltr.pay)
+app.post('/api/create-checkout-session', paymentsCltr.pay)
+app.put('/api/payments/:id/success', paymentsCltr.successUpdate)
+app.put('/api/payments/:id/failed', paymentsCltr.failedUpdate)
 
 
 app.listen(port, ()=>{

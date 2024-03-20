@@ -23,27 +23,28 @@ const generateOTP = () => {
 
 //mailGeneration
 const sendMail = (userMail, otp) => {
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.mailtrap.io',
-        port: 2525,
+    let transporter = nodemailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
         auth: {
-            user: process.env.STMP_USERNAME,
-            pass: process.env.STMP_PASSOWRD
+            user: process.env.EMAIL_USERNAME,
+            pass: process.env.EMAIL_PASSWORD
         }
-    })
+    });
+
 
     const html = `
-    <p><b>Hi <br/> Thankyou for registering to Rseortify,</b><br />Your otp ${otp}</p>
-    `
+<p><b>Hi <br/> Thankyou for registering to Rseortify,</b><br />Your otp ${otp}</p>
+` 
     async function mailSend() {
         // send mail with defined transport object
         const info = await transporter.sendMail({
-            from: 'sender@gmail.com', // sender address
+            from: process.env.EMAIL_USERNAME, // sender address
             to: userMail, // list of receivers
             subject: "Registration Confirmation", // Subject line
             html: html, // html body
         });
-
     }
     mailSend().catch(console.error)
 }
@@ -82,49 +83,49 @@ userCntrl.create = async (req, res) => {
 }
 
 //to verify the email - otp verification
-userCntrl.verifyEmail = async(req, res)=>{
+userCntrl.verifyEmail = async (req, res) => {
     const errors = validationResult(req)
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
     }
-    const {email, otp} = _.pick(req.body, ['email','otp'])
-    try{    
-        const user = await User.findOne({email:email})
-        if(!user){
-            return res.status(404).json({error:'record not found'})
+    const { email, otp } = _.pick(req.body, ['email', 'otp'])
+    try {
+        const user = await User.findOne({ email: email })
+        if (!user) {
+            return res.status(404).json({ error: 'record not found' })
         }
-        if(user && user.otp != otp){
-            return res.status(400).json({error:'Invalid OTP'})
+        if (user && user.otp != otp) {
+            return res.status(400).json({ error: 'Invalid OTP' })
         }
-        await User.findOneAndUpdate({email:email}, {$set:{isVerified:true}}, {new:true})
+        await User.findOneAndUpdate({ email: email }, { $set: { isVerified: true } }, { new: true })
         res.send('Email Verified')
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({error:'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 }
 
 //for resending OTP
-userCntrl.resendOTP = async(req, res)=>{
+userCntrl.resendOTP = async (req, res) => {
     const errors = validationResult(req)
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
     }
-    const {email} = _.pick(req.body,['email'])
-    try{
-        const user = await User.findOne({email:email})
-        if(!user){
-            return res.status(404).json({error:'record not found'})
+    const { email } = _.pick(req.body, ['email'])
+    try {
+        const user = await User.findOne({ email: email })
+        if (!user) {
+            return res.status(404).json({ error: 'record not found' })
         }
         {
             const otp = generateOTP()
             sendMail(user.email, otp)
-            await User.findOneAndUpdate({email:user.email},{$set:{otp:otp}},{new :true})
+            await User.findOneAndUpdate({ email: user.email }, { $set: { otp: otp } }, { new: true })
             res.send('Otp ReSend')
         }
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({error:'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 }
 
@@ -141,120 +142,132 @@ userCntrl.lists = async (req, res) => {
 }
 
 //forgot password
-userCntrl.forgotPassword = async(req,res)=>{
-    const {email, otp, password} = _.pick(req.body,['email', 'otp','password'])
-    try{
-        const user = await User.findOne({email:email})
-        if(!user){
-            return res.status(404).json({error:'record not found'})
+userCntrl.forgotPassword = async (req, res) => {
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()})
+    }
+    const { email, otp, password } = _.pick(req.body, ['email', 'otp', 'password'])
+    try {
+        const user = await User.findOne({ email: email })
+        if (!user) {
+            return res.status(404).json({ error: 'record not found' })
         }
-        if(user && user.otp != otp){
-            return res.status(400).json({error:'invalid otp'})
+        if (user && user.otp != otp) {
+            return res.status(400).json({ error: 'invalid otp' })
         }
         const salt = await bcryptjs.genSalt()
         const encryptedPassword = await bcryptjs.hash(password, salt)
-        await User.findOneAndUpdate({email:email},{$set:{password:encryptedPassword}},{new:true})
+        await User.findOneAndUpdate({ email: email }, { $set: { password: encryptedPassword } }, { new: true })
         res.send('Password Updated')
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({error:'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 }
 
 //to update user record
-userCntrl.update = async(req, res)=>{
-    const {name, contactNo} = _.pick(req.body, ['name', 'contactNo'])
-    try{
-        const user =  await User.findOne({_id:req.user.id})
-        if(!user){
-            return res.status(404).json({error:'record not found'})
+userCntrl.update = async (req, res) => {
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()})
+    }
+    const { name, contactNo } = _.pick(req.body, ['name', 'contactNo'])
+    try {
+        const user = await User.findOne({ _id: req.user.id })
+        if (!user) {
+            return res.status(404).json({ error: 'record not found' })
         }
-        const user1 = await User.findOneAndUpdate({_id:user._id},{$set:{name:name, contactNo:contactNo}}, {new:true})
+        const user1 = await User.findOneAndUpdate({ _id: user._id }, { $set: { name: name, contactNo: contactNo } }, { new: true })
         res.json(user1)
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({error:'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 }
 
 
 //to update the password
-userCntrl.updatePassword = async(req,res)=>{
-    const {password, newPassword} = _.pick(req.body,['password','newPassword'])
-    try{
-        const user = await User.findOne({_id:req.user.id})
-        if(!user){
-            return res.status(404).json({error:'record not found'})
+userCntrl.updatePassword = async (req, res) => {
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()})
+    }
+    const { password, newPassword } = _.pick(req.body, ['password', 'newPassword'])
+    try {
+        const user = await User.findOne({ _id: req.user.id })
+        if (!user) {
+            return res.status(404).json({ error: 'record not found' })
         }
         const checkPassword = await bcryptjs.compare(password, user.password)
-        if(!checkPassword){
-            return res.status(400).json({error:'Invalid Password'})
+        if (!checkPassword) {
+            return res.status(400).json({ error: 'Invalid Password' })
         }
         const salt = await bcryptjs.genSalt()
         const encryptedPassword = await bcryptjs.hash(newPassword, salt)
-        const user1 = await User.findOneAndUpdate({_id:req.user.id}, {$set:{password:encryptedPassword}}, {new:true})
+        const user1 = await User.findOneAndUpdate({ _id: req.user.id }, { $set: { password: encryptedPassword } }, { new: true })
         res.json(user1)
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({error:'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 }
 
 
 //to get the particular user record
-userCntrl.account = async(req, res)=>{
-    try{
+userCntrl.account = async (req, res) => {
+    try {
         const user = await User.findById(req.user.id)
-        if(!user){
-            return res.status(404).json({error:'record not found'})
+        if (!user) {
+            return res.status(404).json({ error: 'record not found' })
         }
         res.json(user)
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({error:'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 }
 
 
 //to delete the particular record
-userCntrl.destroy = async(req,res)=>{
-    try{
+userCntrl.destroy = async (req, res) => {
+    try {
         const user = await User.findByIdAndDelete(req.user.id)
-        if(!user){
-            return res.status(404).json({error:'record not found'})
+        if (!user) {
+            return res.status(404).json({ error: 'record not found' })
         }
         res.json(user)
-    }catch(err){
+    } catch (err) {
         console.log(err)
-        res.status(500).json({error:'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 }
 
 //userCntrl login
-userCntrl.login = async(req,res)=>{
+userCntrl.login = async (req, res) => {
     const errors = validationResult(req)
-    if(!errors.isEmpty()){
-        return res.status(400).json({errors:errors.array()})
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() })
     }
-    const {email, password} = _.pick(req.body,['email','password'])
-    try{
-        const user = await User.findOne({email:email})
-        if(!user){
-            return res.status(404).json({error:'invali EmailId/Password'})
+    const { email, password } = _.pick(req.body, ['email', 'password'])
+    try {
+        const user = await User.findOne({ email: email })
+        if (!user) {
+            return res.status(404).json({ error: 'invali EmailId/Password' })
         }
         const checkPassword = await bcryptjs.compare(password, user.password)
-        if(!checkPassword){
-            return res.status(404).json({error:'invalid EmailId/Password'})
+        if (!checkPassword) {
+            return res.status(404).json({ error: 'invalid EmailId/Password' })
         }
         const tokenData = {
-            id:user._id,
-            role:user.role
+            id: user._id,
+            role: user.role
         }
-        const token = jwt.sign(tokenData, process.env.JWT_SECRETKEY, {expiresIn:'7d'})
-        res.json({token:token})
-    }catch(err){
+        const token = jwt.sign(tokenData, process.env.JWT_SECRETKEY, { expiresIn: '7d' })
+        res.json({ token: token })
+    } catch (err) {
         console.log(err)
-        res.status(500).json({error:'Internal Server Error'})
+        res.status(500).json({ error: 'Internal Server Error' })
     }
 }
 
