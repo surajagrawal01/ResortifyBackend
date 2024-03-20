@@ -12,10 +12,7 @@ roomController.update = async(req,res)=>{
     const id= req.params.id
     const {body} = req
     try{
-        const owner = await User.findOne({_id:ownerId})
-        if(!owner){
-            res.status(403).json({error:"you are not authorized to update this room"})
-        }
+        // find property based on ownerid and find roomtype based on property and id
         const beforeUpdate = await RoomType.findOne({_id:id})
         const roomType = await RoomType.findOneAndUpdate({_id:id},body,{new:true})
         if(!roomType || !beforeUpdate){

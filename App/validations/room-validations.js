@@ -79,6 +79,7 @@ const roomValidationSchema ={
                 if(Object.keys(value).length === 0){
                     throw new Error("avalability cannot be empty")
                 }
+                return true
             }
         }
     },
@@ -98,8 +99,8 @@ const roomValidationSchema ={
                     if(!mongoose.Types.ObjectId.isValid(ele)){
                         throw new Error('not a valid mongoose id')
                     }
-                })
-
+                }) 
+                return true
             }
         }
     }

@@ -30,7 +30,7 @@ const propertySchema = new Schema({
         lng:String
     },
     propertyAmenities:[Schema.Types.ObjectId], 
-    propertyPhotos:String,
+    propertyPhotos:[String],
     isDeleted:{
         type:Boolean,
         default:false

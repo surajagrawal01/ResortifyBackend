@@ -1,3 +1,4 @@
+const Amenity = require('../models/amenities')
 const amenititiesValidationSchema ={
     name:{
         exists:{
@@ -5,7 +6,8 @@ const amenititiesValidationSchema ={
         },
         notEmpty:{
             errorMessage:'amenity  name is required'
-        }
+        },
+        trim:true
     },
     type:{
         exists:{
@@ -17,7 +19,9 @@ const amenititiesValidationSchema ={
         isIn:{
             options:[['property','room']],
             errorMessage:'amenity should be from either property or room'
-        }
+        },
+        trim:true
+        
     }
 }
 module.exports = amenititiesValidationSchema
