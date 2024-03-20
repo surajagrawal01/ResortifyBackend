@@ -46,9 +46,9 @@ propertyController.create=async(req,res)=>{
         
     try{
         const property = new Property(body)
-
-        // property.propertyPhotos = req.file.filename //multer is remaining
-        // console.log(req.file.filename)
+        req.files.forEach((ele,i) =>{
+           property.propertyPhotos[i] = ele.filename
+        })
         property.ownerId = req.user.id
         const generalModel = new GenrealPropertyModel(generalmodelData)
         
@@ -63,7 +63,7 @@ propertyController.create=async(req,res)=>{
         const roomTypes = await RoomType.find()
         roomTypes.forEach(async(ele) =>{
             for(let i=0; i< ele.NumberOfRooms;i++){
-              await Room.create({roomTypeId:ele._id,type:ele.roomType})  
+              await Room.create({roomTypeId:ele._id,type:ele.roomType})  // try to use insert many
             }
         })
         
@@ -99,11 +99,9 @@ const generalmodelData =  _.pick(req.body,['bookingPolicies',
                                             'financeAndLegal',
                                             'bankingDetails'])
 
-const {roomTypesData} = req.body
-console.log(roomTypesData)
     try{ 
 
-         const property = await Property.findOneAndUpdate({_id:id},body,{new:true})
+         const property = await Property.findOneAndUpdate({_id:id,ownerId:req.user.id},body,{new:true})
           if(!property){
            return  res.status(404).json({error:'record not found!'})
         }  
@@ -122,7 +120,7 @@ propertyController.delete = async(req,res) =>{
     const {id}= req.params
     const {type} = req.query
     try{
-        const property = await Property.findOne({_id:id})
+        const property = await Property.findOne({_id:id,ownerId:req.user.id})
         if(!property){
           return res.status(404).json({error:'record not found!'})
         }
@@ -150,7 +148,7 @@ propertyController.listOne =async(req,res)=>{
         const property = await Property.findOne({_id:id})
         const roomTypes= await RoomType.find({propertyId:property._id})
         const generalProperyData = await GenrealPropertyModel.findOne({propertyId:property._id})
-        
+        // get the rooms based on booking status
         res.json({property,generalProperyData,roomTypes})
     }catch(err){
         console.log(err)
@@ -158,4 +156,21 @@ propertyController.listOne =async(req,res)=>{
     }
 
 }
+
+// controller for admin to appprove the property
+propertyController.adminApprove = async(req,res)=>{
+        const {id} = req.params
+        try{
+            const property = await Property.findOneAndUpdate({_id:id},{$set:{isApproved:true}},{new:true})
+            if(!property){
+                res.status(404).json({error:'record not found'})
+            }
+            res.json(property)
+        }catch(err){
+            console.log(err)
+            res.status(500).json({error:'internal server error'})
+        }
+}
+
+
 module.exports = propertyController

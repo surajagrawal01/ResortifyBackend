@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Property = require('../models/property-model')
 const propertyValidationSchema = {
     totalRooms:{
-        in:['form-data'],
+        // in:['form-data'],
         exists:{
             errorMessage:'total rooms field is required'
         },
@@ -15,7 +15,7 @@ const propertyValidationSchema = {
         escape:true
     },
     propertyName:{
-        in:['form-data'],
+        // in:['form-data'],
         exists:{
             errorMessage:'property name field is required'
         },
@@ -26,7 +26,7 @@ const propertyValidationSchema = {
         escape:true
     },
     propertyBuiltDate:{
-        in:['form-data'],
+        // in:['form-data'],
         exists:{
             errorMessage:'date field is required'
         },
@@ -40,7 +40,7 @@ const propertyValidationSchema = {
        
     },
     packages:{
-        in:['form-data'],
+        // in:['form-data'],
         isArray:{
             errorMessage:'* package should be an array'
         },
@@ -49,7 +49,7 @@ const propertyValidationSchema = {
                 if(value.length === 0){
                     throw new Error('packages should not be empty')
                 }
-                value.foreach(ele =>{
+                value.forEach(ele =>{
                     if(Object.values(ele).length === 0){
                         throw new Error('package cannot be empty')
                     }
@@ -99,6 +99,63 @@ const propertyValidationSchema = {
             }
         }
        
+    },
+    'location.houseNumber':{
+        exists:{
+            errorMessage:'house number field is required'
+        },
+        notEmpty:{
+            errorMessage:'house number is required'
+        }
+    },
+    'location.locality':{
+        exists:{
+            errorMessage:'locality field is required'
+        },
+        notEmpty:{
+            errorMessage:'locality filed is required'
+        },
+    }, 
+    'location.area':{
+        exists:{
+            errorMessage:'locality area field is required'
+        },
+        notEmpty:{
+             errorMessage:'locality area is required'
+        }
+       
+    },
+    'location.pincode':{
+        exists:{
+            errorMessage:'locality pincode field is required'
+        },
+        notEmpty:{
+            errorMessage:'pincode is required'
+       }
+    },
+    'location.city':{
+        exists:{
+            errorMessage:'location city field is required'
+        },
+        notEmpty:{
+            errorMessage:'city is required'
+       }
+    },
+    'location.state':{
+        exists:{
+            errorMessage:'location state field is required'
+        },
+        notEmpty:{
+            errorMessage:'state is required'
+       }
+    },
+    'location.country':{
+        exists:{
+            errorMessage:'locality state field is required'
+        },
+        notEmpty:{
+            errorMessage:'country is required'
+       }
     },
     geoLocation:{
         exists:{
@@ -289,7 +346,11 @@ const propertyValidationSchema = {
                 if(typeof(ele) !== "object"){
                     throw new Error('room types must contain an object')
                 }
+                if(typeof(ele.NumberOfRooms) !== 'number'){
+                    throw new Error('NumberOfRooms field is a number')
+                }
             })
+            return true
         }
     }
    },

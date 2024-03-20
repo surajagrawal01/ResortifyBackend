@@ -1,27 +1,23 @@
 const reviewValidationSchema={
-    photos:{
-        exists:{
-            errorMessage:"photos field is required"
-        }
-    },
 	ratings:{
+        in:['body'],
         exists:{
             errorMessage:"ratings is required"
         },
         notEmpty:{
             errorMessage:"ratings field is required"
         },
-        isNumeric:{
-            errorMessage:"ratings is number"
-        }
+       
     },
     description:{
+        in:['body'],
         exists:{
             errorMessage:"description is required"
         },
         notEmpty:{
             errorMessage:"description field is required"
         }
-    }    
+    },
+    
 }
 module.exports =reviewValidationSchema

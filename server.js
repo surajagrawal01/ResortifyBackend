@@ -76,6 +76,7 @@ const reviewController = require('./App/controllers/reviews-controller')
 const bookingCntrl = require("./App/controllers/booking-controller")
 
 
+
 // property validation schema
 const propertyValidationSchema = require('./App/validations/property-validations')
 //amenities validation schema
@@ -95,11 +96,13 @@ app.get('/api/users/resorts',propertyController.list)
 // get one resort
 app.get('/api/users/resorts/:id',propertyController.listOne)
 // create the resort
-app.post('/api/owners/propertydetails',authenticateUser,authorizeUser(['owner']),upload.single('file'),checkSchema(propertyValidationSchema),propertyController.create)
+app.post('/api/owners/propertydetails',authenticateUser,authorizeUser(['owner']),upload.array('file',10),checkSchema(propertyValidationSchema),propertyController.create)
 //update the resort
 app.put('/api/owners/propertydetails/:id',authenticateUser,authorizeUser(['owner']),checkSchema(propertyValidationSchema),propertyController.update)
 //delete the resort
 app.delete('/api/owners/propertydetails/:id',authenticateUser,authorizeUser(['owner']),propertyController.delete)
+// admin approval of the resort
+app.put('/api/admin/propertydetails/:id',authenticateUser,authorizeUser(['admin']),propertyController.adminApprove)
 
 // rooms api 
 // update a room
@@ -120,12 +123,10 @@ app.get('/api/owners/amenities',authenticateUser,authorizeUser(['owner','admin']
 app.get('/api/owners/amenities/:id',authenticateUser,authorizeUser(['owner','admin']),amenityController.listOne)
 
 
-//get all reviews 
-app.get('/api/users/reviews/:id',reviewController.list)
-//get one review 
+//get one reviews of one property
 app.get('/api/reviews/:id',reviewController.listOne)
 // post the review 
-app.post('/api/users/reviews/:id',authenticateUser,authorizeUser(['user']),checkSchema(reviewValidationSchema),reviewController.create)
+app.post('/api/users/reviews/:id',authenticateUser,authorizeUser(['user']),upload.array('reviewImage',5),checkSchema(reviewValidationSchema),reviewController.create)
 // update the review
 app.put('/api/users/reviews/:id',authenticateUser,authorizeUser(['user']),checkSchema(reviewValidationSchema),reviewController.update)
 //  delete a review
@@ -142,6 +143,8 @@ app.put('/api/bookings/in-out/:id', authenticateUser, authorizeUser(['owner']), 
 app.put('/api/bookings/cancellation/:id', authenticateUser, authorizeUser(['user']), bookingCntrl.cancellation )
 //for all bookings
 app.get('/api/bookings', authenticateUser, authorizeUser(['owner']), bookingCntrl.listBookings )
+
+
 
 
 
