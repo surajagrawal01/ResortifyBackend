@@ -1,4 +1,5 @@
 const Amenity = require('../models/amenities')
+const _ = require('lodash')
 const amenityController ={}
 const {validationResult} = require('express-validator')
 // create amenity 
@@ -7,7 +8,11 @@ amenityController.create =async(req,res)=>{
     if(!errors.isEmpty()){
         return res.status(400).json({errors:errors.array()})
     }
-    const {body} = req
+    const body = _.pick(req.body,['name','type'])
+     const amenity = await Amenity.findOne({name:body.name,type:body.type})
+        if(amenity){
+           return res.json('amenity already exists')
+        }    
     try{
         const amenity = new Amenity(body)
         await amenity.save()
@@ -20,14 +25,17 @@ amenityController.create =async(req,res)=>{
 }
 // update the amenity
 amenityController.update=async(req,res)=>{
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()})
+    }
     const {id} = req.params
-    const {body} = req
+    const body= _.pick(req.body,['name','type'])
     try{
-        const amenity = await Amenity.findOne({_id:id})
-        if(!amenity){
+        const response = await Amenity.findOneAndUpdate({_id:id},body,{new:true})
+        if(!response){
             return res.status(404).json({error:'record not found!'})
         }
-        const response = await Amenity.findOneAndUpdate({_id:amenity._id},body,{new:true})
         res.json(response)
     }catch(err){
         console.log(err)
@@ -38,11 +46,10 @@ amenityController.update=async(req,res)=>{
 amenityController.destroy = async(req,res)=>{
     const {id} = req.params
     try{
-        const amenity = await Amenity.findOne({_id:id})
-        if(!amenity){
+        const response = await Amenity.findOneAndDelete({_id:id})
+        if(!response){
             return res.status(404).json({error:'record not found !'})
         }
-        const response = await Amenity.findOneAndDelete({_id:amenity._id})
         res.json(response)
     }catch(err){
         console.log(err)
@@ -50,6 +57,8 @@ amenityController.destroy = async(req,res)=>{
 
     }
 }
+
+
 amenityController.list = async(req,res)=>{
     try{
        const amenities =  await Amenity.find()

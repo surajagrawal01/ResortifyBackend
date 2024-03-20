@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Property = require('../models/property-model')
 const propertyValidationSchema = {
     totalRooms:{
-        in:['form-data'],
+        // in:['form-data'],
         exists:{
             errorMessage:'total rooms field is required'
         },
@@ -15,7 +15,7 @@ const propertyValidationSchema = {
         escape:true
     },
     propertyName:{
-        in:['form-data'],
+        // in:['form-data'],
         exists:{
             errorMessage:'property name field is required'
         },
@@ -26,7 +26,7 @@ const propertyValidationSchema = {
         escape:true
     },
     propertyBuiltDate:{
-        in:['form-data'],
+        // in:['form-data'],
         exists:{
             errorMessage:'date field is required'
         },
@@ -40,7 +40,7 @@ const propertyValidationSchema = {
        
     },
     packages:{
-        in:['form-data'],
+        // in:['form-data'],
         isArray:{
             errorMessage:'* package should be an array'
         },
@@ -49,7 +49,7 @@ const propertyValidationSchema = {
                 if(value.length === 0){
                     throw new Error('packages should not be empty')
                 }
-                value.foreach(ele =>{
+                value.forEach(ele =>{
                     if(Object.values(ele).length === 0){
                         throw new Error('package cannot be empty')
                     }
@@ -99,6 +99,63 @@ const propertyValidationSchema = {
             }
         }
        
+    },
+    'location.houseNumber':{
+        exists:{
+            errorMessage:'house number field is required'
+        },
+        notEmpty:{
+            errorMessage:'house number is required'
+        }
+    },
+    'location.locality':{
+        exists:{
+            errorMessage:'locality field is required'
+        },
+        notEmpty:{
+            errorMessage:'locality filed is required'
+        },
+    }, 
+    'location.area':{
+        exists:{
+            errorMessage:'locality area field is required'
+        },
+        notEmpty:{
+             errorMessage:'locality area is required'
+        }
+       
+    },
+    'location.pincode':{
+        exists:{
+            errorMessage:'locality pincode field is required'
+        },
+        notEmpty:{
+            errorMessage:'pincode is required'
+       }
+    },
+    'location.city':{
+        exists:{
+            errorMessage:'location city field is required'
+        },
+        notEmpty:{
+            errorMessage:'city is required'
+       }
+    },
+    'location.state':{
+        exists:{
+            errorMessage:'location state field is required'
+        },
+        notEmpty:{
+            errorMessage:'state is required'
+       }
+    },
+    'location.country':{
+        exists:{
+            errorMessage:'locality state field is required'
+        },
+        notEmpty:{
+            errorMessage:'country is required'
+       }
     },
     geoLocation:{
         exists:{
@@ -276,108 +333,26 @@ const propertyValidationSchema = {
             }
         }
     },
-    rooms:{
-        isArray:{
-            errorMessage:'rooms is an array'
-        },
-        custom:{
-            options:function(value){
-                if(value.length ==0){
-                    throw new Error('rooms cannot be empty')
-                }
-                value.forEach(ele =>{
-                    if(Object.keys(ele).length !== 2){
-                        throw new Error('rooms should contain number of rooms and type ')
-                    }
-                })
-                return true
-            }
-        }
-    },
-    // 'rooms.NumberOfRooms':{
-    //     exists:{
-    //         errorMessage:'number of rooms is required'
-    //     },
-    //     isNumeric:{
-    //         errorMessage:'number of rooms expects a number'
-    //     }
-
-    // },
-    roomDescription:{
-        exists:{
-            errorMessage:'room description field is required'
-        }
-    },
-    baseRoomPrice:{
-        exists:{
-            errorMessage:'base room price field is required'
-        },
-        notEmpty:{
-            errorMessage:'base room price is required'
-        },
-        isNumeric:{
-            errorMessage:'room price is a number '
-        }
-    },
-    availability:{
-        isObject:{
-            errorMessage:'availability is an object'
-        },
-        custom:{
-            options: function(value){
-                if(Object.keys(value).length !== 2){
-                    throw new Error('availability has two fields start and end date')
-                }
-                return true
-            }
-        }
-    },
-    'availability.startDate':{
-        exists:{
-            errorMessage:'start date field is required'
-        },
-        notEmpty:{
-            errorMessage:'startDate is required'
-        },
-        isDate:{
-            errorMessage:'enter valid date format'
-        }
-    },
-    'availability.endDate':{
-        exists:{
-            errorMessage:'end date field is required'
-        },
-        notEmpty:{
-            errorMessage:'end date is required'
-        },
-        isDate:{
-            errorMessage:'enter valid date format'
-        }
-    },
-    roomAmentities:{
-        exists:{
-            errorMessage:'amenitites field is required'
-        },
-    notEmpty:{
-        errorMessage:'* amenities is required'
-    },
+   roomTypesData:{
     isArray:{
-        errorMessage:'room amenity should be an array'
+        errorMessage:'room types should be an array'
     },
     custom:{
-        options:function(value){
-                if(value.length === 0){
-                throw new Error('room amenities cannot be empty')
+        options: function(value){
+            if(value.length === 0){
+                throw new Error('room types cannot be empty atleast add one')
             }
-            value.forEach(ele =>{
-                if(!mongoose.Types.ObjectId.isValid(ele)){
-                    throw new Error('not a valid mongoose id')
+            value.forEach( ele =>{
+                if(typeof(ele) !== "object"){
+                    throw new Error('room types must contain an object')
+                }
+                if(typeof(ele.NumberOfRooms) !== 'number'){
+                    throw new Error('NumberOfRooms field is a number')
                 }
             })
-            
-        return true
+            return true
         }
-    } 
     }
+   },
 }
 module.exports = propertyValidationSchema

@@ -1,5 +1,6 @@
 const {format} = require('date-fns')
 const Property = require("../models/property-model")
+const mongoose = require('mongoose')
 const bookingValidaton = {
     propertyId: {
         notEmpty: {
@@ -19,13 +20,25 @@ const bookingValidaton = {
         }
     },
     userName: {
-        trim: true,
         exists: {
             errorMessage: 'name field is required'
         },
         notEmpty: {
             errorMessage: 'name field must have some value'
-        }
+        },
+        trim: true,
+        isLength: {
+            options: { min: 3, max: 20 },
+            errorMessage: 'Username must be within 3 to 20 characters'
+        },
+        custom: {
+            options: value => {
+                // Check if the value contains only letters and spaces
+                return /^[A-Za-z\s]+$/.test(value);
+            },
+            errorMessage: 'Name cannot contain numbers or symbols'
+        },
+       
     },
     bookingCategory: {
         trim: true,
@@ -148,6 +161,22 @@ const bookingValidaton = {
         },
         isArray:{
             errorMessage:'Rooms field value must be an object'
+        },
+        custom:{
+            options: function(value){
+                value.forEach(ele =>{
+                    if(typeof(ele) !== 'object'){
+                        throw new Error('rooms must contain roomtype')
+                    }
+                    if(!mongoose.Types.ObjectId.isValid(ele.roomTypeId) ){
+                        throw new Error('room type id must be valid mongo id')
+                    }
+                    if(typeof(ele.NumberOfRooms)!== 'number'){
+                        throw new Error('number of rooms is a number')
+                    }
+                })
+                return true
+            }
         }
     },
     packages: {
