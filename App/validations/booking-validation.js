@@ -187,7 +187,60 @@ const bookingValidaton = {
             errorMessage:'contact number must be of 10 digits only'
         }
     }
-
 }
 
-module.exports = bookingValidaton;
+
+const updateStatusValidation = {
+    id:{
+        in:['params'],
+        isMongoId:{
+            errorMessage:'must be a mongoId'
+        }
+    },
+    status:{
+        in:['query'],
+        exists:{
+            errorMessage:'status params is required'
+        },
+        notEmpty:{
+            errorMessage:'status params must have some value'
+        },
+        isIn:{
+            options:[['approved','notApproved']],
+            errorMessage:'value can be approved  or notApproved'
+        }
+    }
+}
+
+const updateCheckInOutValidation = {
+    id:{
+        in:['params'],
+        isMongoId:{
+            errorMessage:'must be a mongoId'
+        }
+    },
+    type:{
+        in:['query'],
+        exists:{
+            errorMessage:'type params is required'
+        },
+        notEmpty:{
+            errorMessage:'type params must have some value'
+        },
+        isIn:{
+            options:[['isCheckedIn','isCheckedOut']],
+            errorMessage:'value can be isCheckedIn  or isCheckedOut'
+        }
+    }
+}
+
+const bookingCancelSchema = {
+    id:{
+        in:['params'],
+        isMongoId:{
+            errorMessage:'must be a mongoId'
+        }
+    },
+}
+
+module.exports = {bookingValidaton, updateStatusValidation, updateCheckInOutValidation, bookingCancelSchema}
