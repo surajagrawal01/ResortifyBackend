@@ -126,8 +126,8 @@ const bookingValidaton = {
         },
         custom:{
             options:function(val, {req}){
-                if(val < 0){
-                    throw new Error("Value of Adult must be a positive number")
+                if(val < 1){
+                    throw new Error("Value of Adult must be atleast1")
                 }
                 return true
             }
