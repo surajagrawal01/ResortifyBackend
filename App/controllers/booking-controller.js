@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator")
 const BookingModel = require("../models/booking-model")
 const Property = require("../models/property-model")
 const User = require("../models/user-model")
+const _ = require("lodash")
 const nodemailer = require("nodemailer")
  
 
@@ -37,13 +38,16 @@ bookingCntrl.create = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(404).json({ errors: errors.array() })
     }
-    const { body } = req
+    const body  = _.pick(req.body, ['propertyId','userName','bookingCategory','Date','guests','contactNumber','Rooms','packages','totalAmount'])
     try {
+        const property = await Property.findOne({_id:body.propertyId, isApproved:true})
+        if(!property){
+            return res.status(400).json({err:`can't make booking property not approved` })
+        }
         const booking1 = new BookingModel(body)
         let str = 'RST'
         let count = await BookingModel.find().countDocuments() + 1
         const user = await User.findById(req.user.id)
-        const property = await Property.findById(body.propertyId)
         const owner = await User.findOne({ _id: property.ownerId })
         booking1.bookingId = str + count
         booking1.userId = req.user.id

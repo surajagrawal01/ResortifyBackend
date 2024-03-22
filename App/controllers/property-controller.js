@@ -10,7 +10,7 @@ const propertyController = {}
 // list the resorts
 propertyController.list =async(req,res)=>{
     try{
-        const properties = await Property.find({isDeleted:false}) // find using isapproved 
+        const properties = await Property.find({isDeleted:false, isApproved:true}) // find using isapproved 
         res.json(properties)
     }catch(err){
         console.log(err)
