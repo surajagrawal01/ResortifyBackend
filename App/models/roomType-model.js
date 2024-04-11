@@ -13,7 +13,10 @@ const roomSchema = new Schema({
 			baseRoomPrice:Number,
 			photos : [String],
 			availability:{startDate:Date,endDate:Date},
-			roomAmentities: [Schema.Types.ObjectId]
+			roomAmentities: {
+				type:[Schema.Types.ObjectId],
+				ref:'Amenity'
+			}
 		
 	
 },{timestamps:true})

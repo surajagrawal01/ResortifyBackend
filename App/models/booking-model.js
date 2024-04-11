@@ -10,7 +10,10 @@ const bookingModel = new Schema({
     guests: { adult: Number, children: Number },
     contactNumber: Number,
     Rooms: [{
-        roomTypeId: Schema.Types.ObjectId,
+        roomTypeId: {
+            type:Schema.Types.ObjectId,
+            ref:'RoomType'
+        },
         NumberOfRooms: Number
     }],
     packages: [String],
@@ -31,6 +34,10 @@ const bookingModel = new Schema({
     isCancelled:{
         type:String, 
         default:false
+    },
+    isDeleted:{
+        type:String,
+        default:'false'
     }
 },{timestamps:true})
 
