@@ -11,7 +11,6 @@ const genralSchema = new Schema({
         dayOut: { checkIn: String, checkOut: String }
     },
     cancellationPolicies: [String],
-    refundPolicies: [String],
     propertyRules: {
         guestPolicies: [String],
         acceptableIdentityProofs: [String]
