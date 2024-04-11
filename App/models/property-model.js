@@ -29,11 +29,19 @@ const propertySchema = new Schema({
         lat:String,
         lng:String
     },
-    propertyAmenities:[Schema.Types.ObjectId], 
+    propertyAmenities:{
+        type:[Schema.Types.ObjectId],
+        ref:'Amenity'
+    }, 
     propertyPhotos:[String],
     isDeleted:{
         type:Boolean,
         default:false
+    },
+    basePrice:Number,
+    rating:{
+        type:Number,
+        default: 3
     }
 },{timestamps:true})
 const Property = model('Property',propertySchema)

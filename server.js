@@ -111,6 +111,9 @@ app.delete('/api/owners/propertydetails/:id',authenticateUser,authorizeUser(['ow
 // admin approval of the resort
 app.put('/api/admin/propertydetails/:id',authenticateUser,authorizeUser(['admin']),propertyController.adminApprove)
 
+//to get properties based query - on 04th april by Suraj
+app.get('/api/properties/lists', propertyController.lists)
+
 // rooms api 
 // update a room
 app.put('/api/owners/propertydetails/rooms/:id',authenticateUser,authorizeUser(['owner']),checkSchema(roomValidationSchema),roomController.update)
@@ -142,7 +145,7 @@ app.delete('/api/users/reviews/:id',authenticateUser,authorizeUser(['user']),rev
 //bookingCntollers
 //for booking 
 app.post('/api/bookings', authenticateUser, authorizeUser(['user']),checkSchema(bookingValidaton), bookingCntrl.create)
-//for changing booking status
+//for changing booking status have to pass query
 app.put('/api/bookings/:id', authenticateUser, authorizeUser(['owner']), checkSchema(updateStatusValidation),  bookingCntrl.changeStatus)
 //for changing checkedIn checkedOut
 app.put('/api/bookings/in-out/:id', authenticateUser, authorizeUser(['owner']), checkSchema(updateCheckInOutValidation), bookingCntrl.changeCheckInOut )

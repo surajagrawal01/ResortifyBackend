@@ -74,6 +74,7 @@ userCntrl.create = async (req, res) => {
                 user.role = 'admin'
             }
         }
+        console.log(body)
         await user.save()
         res.status(201).json(user)
     } catch (err) {
@@ -251,9 +252,12 @@ userCntrl.login = async (req, res) => {
     }
     const { email, password } = _.pick(req.body, ['email', 'password'])
     try {
-        const user = await User.findOne({ email: email })
+        const user = await User.findOne({ email: email})
         if (!user) {
             return res.status(404).json({ error: 'invali EmailId/Password' })
+        }
+        if(!user.isVerified){
+            return res.status(400).json({error:'Email not verified.. Click here to verify'})
         }
         const checkPassword = await bcryptjs.compare(password, user.password)
         if (!checkPassword) {
