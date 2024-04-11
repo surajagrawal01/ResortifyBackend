@@ -133,7 +133,7 @@ bookingCntrl.changeStatus = async (req, res) => {
             <p><b>Hi ${user.name} <br/> Booking gets approved by owner, please use the <a href=${link}>link</a> to make the payment for your booking on ${String(booking.Date.checkIn).slice(0, 10)} at ${property.propertyName} </p>
             `
             sendMail(user.email, userHTMLMsg)
-            res.json('Mail Sent to user')
+            res.json(booking)
             setTimeout(async() => {
                 const booking = await BookingModel.findOne({ _id: bookingId, propertyId: property._id })
                 if (booking.isPaymentDone == 'true') {
@@ -145,7 +145,7 @@ bookingCntrl.changeStatus = async (req, res) => {
                     sendMail(user.email, userHTMLMsg)
                 } else {
                     //to delete the record if payment not done within given period of time
-                    const bookingDelete = await BookingModel.findOneAndDelete({bookingId:booking.bookingId})
+                    const bookingDelete = await BookingModel.findOneAndUpdate({bookingId:booking.bookingId}, {$set:{isDeleted:"true"}}) //change on 4th April
                     const userHTMLMsg = `
                     <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, You didn't completed the payment so we are giving priority to another one.`
                     sendMail(user.email, userHTMLMsg)
@@ -156,7 +156,7 @@ bookingCntrl.changeStatus = async (req, res) => {
             const userHTMLMsg = `
             <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, Booking gets not approved by owner,there are some maintainance work going on.`
             sendMail(user.email, userHTMLMsg)
-            res.json('Mail Sent to User')
+            res.json(booking)
         }
     } catch (err) {
         console.log(err)
@@ -191,7 +191,7 @@ bookingCntrl.changeCheckInOut = async (req, res) => {
 bookingCntrl.listBookings = async (req, res) => {
     try {
         const property = await Property.findOne({ ownerId: req.user.id })
-        const bookings = await BookingModel.find({ propertyId: property._id })
+        const bookings = await BookingModel.find({ propertyId: property._id}).populate('Rooms.roomTypeId',['roomType','_id']).sort({_id:-1})
         res.json(bookings)
     } catch (err) {
         console.log(err)
@@ -203,7 +203,7 @@ bookingCntrl.listBookings = async (req, res) => {
 bookingCntrl.listOne = async (req, res) => {
     const id = req.params.id
     try {
-        const booking = await BookingModel.findById(id)
+        const booking = await BookingModel.findOne({_id:id, isDeleted:"false"}) //chnages here on 04th April
         res.json(booking)
     } catch (err) {
         console.log(err)
