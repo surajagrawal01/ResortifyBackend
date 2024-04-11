@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Property = require('../models/property-model')
 const propertyValidationSchema = {
     totalRooms:{
-        // in:['form-data'],
+        in:['body'],
         exists:{
             errorMessage:'total rooms field is required'
         },
@@ -15,7 +15,7 @@ const propertyValidationSchema = {
         escape:true
     },
     propertyName:{
-        // in:['form-data'],
+        in:['body'],
         exists:{
             errorMessage:'property name field is required'
         },
@@ -26,7 +26,7 @@ const propertyValidationSchema = {
         escape:true
     },
     propertyBuiltDate:{
-        // in:['form-data'],
+        in:['body'],
         exists:{
             errorMessage:'date field is required'
         },
@@ -40,7 +40,7 @@ const propertyValidationSchema = {
        
     },
     packages:{
-        // in:['form-data'],
+        in:['body'],
         isArray:{
             errorMessage:'* package should be an array'
         },
@@ -60,6 +60,7 @@ const propertyValidationSchema = {
         }
     },
     ownerEmail:{
+        in:['body'],
         exists:{
             errorMessage:'email  is required'
         },
@@ -81,6 +82,7 @@ const propertyValidationSchema = {
         }
     },
     location:{
+        in:['body'],
         exists:{
             errorMessage:'location is required'
         },
@@ -100,7 +102,9 @@ const propertyValidationSchema = {
         }
        
     },
+    
     'location.houseNumber':{
+        in:['body'],
         exists:{
             errorMessage:'house number field is required'
         },
@@ -109,6 +113,7 @@ const propertyValidationSchema = {
         }
     },
     'location.locality':{
+        in:['body'],
         exists:{
             errorMessage:'locality field is required'
         },
@@ -117,6 +122,7 @@ const propertyValidationSchema = {
         },
     }, 
     'location.area':{
+        in:['body'],
         exists:{
             errorMessage:'locality area field is required'
         },
@@ -126,6 +132,7 @@ const propertyValidationSchema = {
        
     },
     'location.pincode':{
+        in:['body'],
         exists:{
             errorMessage:'locality pincode field is required'
         },
@@ -134,6 +141,7 @@ const propertyValidationSchema = {
        }
     },
     'location.city':{
+        in:['body'],
         exists:{
             errorMessage:'location city field is required'
         },
@@ -142,6 +150,7 @@ const propertyValidationSchema = {
        }
     },
     'location.state':{
+        in:['body'],
         exists:{
             errorMessage:'location state field is required'
         },
@@ -150,6 +159,7 @@ const propertyValidationSchema = {
        }
     },
     'location.country':{
+        in:['body'],
         exists:{
             errorMessage:'locality state field is required'
         },
@@ -158,6 +168,7 @@ const propertyValidationSchema = {
        }
     },
     geoLocation:{
+        in:['body'],
         exists:{
                 errorMessage:'geolocation is required'
             },
@@ -179,6 +190,7 @@ const propertyValidationSchema = {
        
     },
     propertyAmenities:{
+        in:['body'],
      exists:{
                 errorMessage:'amenitites field is required'
             },
@@ -204,6 +216,7 @@ const propertyValidationSchema = {
         } 
     },
     bookingPolicies: {
+        in:['body'],
         exists:{
             errorMessage:'bookingPolicies field is required'
         },
@@ -215,14 +228,15 @@ const propertyValidationSchema = {
         },
         custom:{
             options:function(value){
-                if(Object.keys(value).length != 3){
-                    throw new Error('Booking Policies first item must have 3 key value pairs')
+                if(Object.keys(value).length < 1 ){
+                    throw new Error('Booking Policies first item must have 1 key value pairs')
                 }
                 return true
             }
         }
     },
     cancellationPolicies: {
+        in:['body'],
         exists:{
             errorMessage:'cancellationPolicies field is required'
         },
@@ -241,26 +255,27 @@ const propertyValidationSchema = {
             }
         }
     },
-    refundPolicies: {
-        exists:{
-            errorMessage:'refundPolicies field is required'
-        },
-        notEmpty:{
-            errorMessage:'refundPolicies field should not empty'
-        },
-        isArray:{
-            errorMessage:'refundPolicies value must be an array'
-        },
-        custom:{
-            options:function(value){
-                if(value.length < 1){
-                    throw new Error('refundPolicies array must have at least one item')
-                }
-                return true
-            }
-        }
-    },
+    // refundPolicies: {
+    //     exists:{
+    //         errorMessage:'refundPolicies field is required'
+    //     },
+    //     notEmpty:{
+    //         errorMessage:'refundPolicies field should not empty'
+    //     },
+    //     isArray:{
+    //         errorMessage:'refundPolicies value must be an array'
+    //     },
+    //     custom:{
+    //         options:function(value){
+    //             if(value.length < 1){
+    //                 throw new Error('refundPolicies array must have at least one item')
+    //             }
+    //             return true
+    //         }
+    //     }
+    // },
     propertyRules:{
+        in:['body'],
         exists:{
             errorMessage:'propertyRules field is required'
         },
@@ -280,6 +295,7 @@ const propertyValidationSchema = {
         }
     },
     financeAndLegal: {
+        in:['body'],
         exists:{
             errorMessage:'financeAndLegal field is required'
         },
@@ -299,6 +315,7 @@ const propertyValidationSchema = {
         }
     },
     bankingDetails: {
+        in:['body'],
         exists:{
             errorMessage:'bankingDetails field is required'
         },
@@ -310,7 +327,7 @@ const propertyValidationSchema = {
         },
         custom:{
             options:async function(value){
-                if(Object.keys(value).length != 4){
+                if(Object.keys(value).length < 4){
                     throw new Error('bankingDetails must have 4 key value pairs')
                 }
                 // const generalProperyData = await GenrealPropertyModel.findOne({'bankingDetails.bankingAccountNumber' : value.bankingAccountNumber})
@@ -334,6 +351,7 @@ const propertyValidationSchema = {
         }
     },
    roomTypesData:{
+    in:['body'],
     isArray:{
         errorMessage:'room types should be an array'
     },
@@ -346,9 +364,9 @@ const propertyValidationSchema = {
                 if(typeof(ele) !== "object"){
                     throw new Error('room types must contain an object')
                 }
-                if(typeof(ele.NumberOfRooms) !== 'number'){
-                    throw new Error('NumberOfRooms field is a number')
-                }
+                // if(typeof(ele.NumberOfRooms) !== 'number'){
+                //     throw new Error('NumberOfRooms field is a number')
+                // }
             })
             return true
         }

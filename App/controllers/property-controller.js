@@ -33,8 +33,9 @@ propertyController.create=async(req,res)=>{
                                     'ownerEmail',
                                     'location',
                                     'geoLocation'
-                                    ,'propertyAmenities'
-                                    ,'propertyPhotos'])
+                                    ,'propertyAmenities',
+                                    'propertyPhotos'
+                                    ])
     const generalmodelData =  _.pick(req.body,['bookingPolicies',
                                                 'cancellationPolicies',
                                                 'refundPolicies',
@@ -46,9 +47,6 @@ propertyController.create=async(req,res)=>{
         
     try{
         const property = new Property(body)
-        req.files.forEach((ele,i) =>{
-           property.propertyPhotos[i] = ele.filename
-        })
         property.ownerId = req.user.id
         const generalModel = new GenrealPropertyModel(generalmodelData)
         
@@ -69,7 +67,7 @@ propertyController.create=async(req,res)=>{
         
         await property.save()
         await generalModel.save()
-
+        console.log({property,generalModel,roomTypes})
         res.status(201).json({property,generalModel,roomTypes}) //destructuring to display all the detal
 
     }catch(err){
@@ -171,6 +169,28 @@ propertyController.adminApprove = async(req,res)=>{
             res.status(500).json({error:'internal server error'})
         }
 }
+propertyController.photos=(req,res)=>{
+        const arr=[]
+        if(Array.isArray(req.files)){
+            req.files.forEach((ele) =>{
+           arr.push(ele.filename)
+            })
+           return  res.json(arr)
+        }else{
+            return res.status(400).json('error in multer')
+        }  
+}
 
+propertyController.documents =(req,res)=>{
+    const arr=[]
+    if(Array.isArray(req.files)){
+        req.files.forEach((ele) =>{
+       arr.push(ele.filename)
+        })
+       return  res.json(arr)
+    }else{
+        return res.status(400).json('error in multer')
+    }   
+}
 
 module.exports = propertyController

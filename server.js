@@ -7,7 +7,7 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
-
+app.use(express.static('public'))
 const port = 3060
 //databaseConfiguration
 const configDb = require("./config/db")
@@ -91,6 +91,9 @@ const roomValidationSchema = require('./App/validations/room-validations')
 // review validation schema
 const reviewValidationSchema = require('./App/validations/review-validations')
 
+// static data
+const dataController= require('./App/controllers/staticData-controller')
+
 //booking validation schema 
 const {bookingValidaton, updateStatusValidation, updateCheckInOutValidation, bookingCancelSchema} = require('./App/validations/booking-validation')
 
@@ -100,7 +103,7 @@ app.get('/api/users/resorts',propertyController.list)
 // get one resort
 app.get('/api/users/resorts/:id',propertyController.listOne)
 // create the resort
-app.post('/api/owners/propertydetails',authenticateUser,authorizeUser(['owner']),upload.array('file',10),checkSchema(propertyValidationSchema),propertyController.create)
+app.post('/api/owners/propertydetails',authenticateUser,authorizeUser(['owner']),upload.single('file'),checkSchema(propertyValidationSchema),propertyController.create)
 //update the resort
 app.put('/api/owners/propertydetails/:id',authenticateUser,authorizeUser(['owner']),checkSchema(propertyValidationSchema),propertyController.update)
 //delete the resort
@@ -159,6 +162,13 @@ app.post('/api/create-checkout-session', paymentsCltr.pay)
 app.put('/api/payments/:id/success', paymentsCltr.successUpdate)
 app.put('/api/payments/:id/failed', paymentsCltr.failedUpdate)
 
+// request for static data
+app.get('/api/static-data',dataController.list)
+
+//for testing multer
+app.post('/api/propertyphotos',upload.array('files'),propertyController.photos)
+app.post('/api/roomphotos',upload.array('files'),roomController.photos)
+app.post('/api/documentsphotos',upload.array('files'),propertyController.documents)
 
 app.listen(port, ()=>{
     console.log('Server runnning on port'+" "+port)

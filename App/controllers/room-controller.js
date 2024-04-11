@@ -51,4 +51,15 @@ roomController.delete =async(req,res)=>{
     }
 
 }
+roomController.photos = (req,res)=>{
+    const arr=[]
+    if(Array.isArray(req.files)){
+        req.files.forEach((ele) =>{
+       arr.push(ele.filename)
+        })
+       return  res.json(arr)
+    }else{
+        return res.status(400).json('error in multer')
+    }  
+}
 module.exports = roomController
