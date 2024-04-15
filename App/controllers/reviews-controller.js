@@ -5,14 +5,6 @@ const Property = require("../models/property-model")
 const {validationResult} = require('express-validator')
 const Review = require('../models/review-model')
 
-
-reviewController.create = async(req,res)=>{
-    const errors = validationResult(req)
-        if(!errors.isEmpty()){
-            return res.status(400).json({errors:errors.array()})
-        }
-       
-
         const id = req.params.id
         const body = _.pick(req.body,['photos','ratings','description']) //pick
         const userId = req.user.id
@@ -43,6 +35,7 @@ reviewController.create = async(req,res)=>{
             res.status(500).json({error:"internal server error"})
         }
 }
+
 reviewController.update = async(req,res)=>{
     const errors = validationResult(req)
         if(!errors.isEmpty()){
@@ -79,19 +72,17 @@ reviewController.delete = async(req,res)=>{
     
     }
 
-    
-    reviewController.listOne = async(req,res)=>{
-        const id = req.params.id
-        try{
-            const review = await Review.find({propertyId:id})
-            if(!review){
-                return res.status(404).json("record not found")
-            }
-            res.json(review)
-
-        }catch(err){
-            console.log(err)
-            res.status(500).json({error:'internal server error'})
-        }
+reviewController.listOne = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const review = await Review.find({ propertyId: id });
+    if (!review) {
+      return res.status(404).json("record not found");
     }
-module.exports = reviewController
+    res.json(review);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "internal server error" });
+  }
+};
+module.exports = reviewController;

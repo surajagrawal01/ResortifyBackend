@@ -97,6 +97,7 @@ propertyController.propertycreate = async (req, res) => {
     "propertyName",
     "propertyDescription",
     "propertyBuiltDate",
+    "basePrice",
     "packages",
     "contactNumber",
     "ownerEmail",
@@ -109,15 +110,6 @@ propertyController.propertycreate = async (req, res) => {
     const property = new Property(body);
     console.log(property);
     property.ownerId = req.user.id;
-    let basePrice = 100;
-    //   roomTypesData.forEach((ele) => {
-    //     if (basePrice == 0) {
-    //       basePrice = ele.baseRoomPrice;
-    //     } else if (ele.baseRoomPrice <= basePrice) {
-    //       basePrice = ele.baseRoomPrice;
-    //     }
-    //   });
-    property.basePrice = basePrice;
     await property.save();
     res.json(property);
   } catch (err) {
@@ -140,9 +132,11 @@ propertyController.generalModelCreate = async (req, res) => {
   ]);
   try {
     const generalModel = new GenrealPropertyModel(generalmodelData);
-    const property = await Property.findOne({ ownerId: req.user.id });
+    const property = await Property.findOne({ ownerId: req.user.id }); //find by property._id
     generalModel.propertyId = property._id;
+    await generalModel.save();
     res.json(generalModel);
+    console.log(generalModel);
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "internal server error" });
@@ -170,6 +164,7 @@ propertyController.roomtypecreate = async (req, res) => {
     console.log(data);
     const roomTypes = await RoomType.find({ propertyId: property._id });
     res.json(roomTypes);
+    console.log(roomTypes);
   } catch (err) {
     console.log(err);
   }
@@ -183,8 +178,8 @@ propertyController.update = async (req, res) => {
     "propertyName",
     "propertyBuiltDate",
     "packages",
+    "basePrice",
     "contactNumber",
-    "ownerEmail",
     "location",
     "geoLocation",
     "propertyAmenities",
@@ -316,11 +311,13 @@ propertyController.photos = async (req, res) => {
       });
       property.propertyPhotos = arr;
       await property.save();
-      return res.json({ arr, property });
+      return res.json(property);
     } else {
       return res.status(400).json("error in multer");
     }
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 propertyController.documents = (req, res) => {
