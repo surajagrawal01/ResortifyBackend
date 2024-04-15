@@ -4,6 +4,7 @@ const Property = require("../models/property-model")
 const User = require("../models/user-model")
 const _ = require("lodash")
 const nodemailer = require("nodemailer")
+const RoomType = require("../models/roomType-model")
  
 
 const bookingCntrl = {}
@@ -33,6 +34,44 @@ const sendMail = (userMail, html) => {
 }
 
 //for new booking
+// bookingCntrl.create = async (req, res) => {
+//     const errors = validationResult(req)
+//     if (!errors.isEmpty()) {
+//         return res.status(404).json({ errors: errors.array() })
+//     }
+//     const body  = _.pick(req.body, ['propertyId','userName','bookingCategory','Date','guests','contactNumber','Rooms','packages','totalAmount'])
+//     try {
+//         const property = await Property.findOne({_id:body.propertyId, isApproved:true})
+//         if(!property){
+//             return res.status(400).json({err:`can't make booking property not approved` })
+//         }
+//         const booking1 = new BookingModel(body)
+//         let str = 'RST'
+//         let count = await BookingModel.find().countDocuments() + 1
+//         const user = await User.findById(req.user.id)
+//         const owner = await User.findOne({ _id: property.ownerId })
+//         booking1.bookingId = str + count
+//         booking1.userId = req.user.id
+//         booking1.userName = user.name
+//         booking1.status = "initiated"
+        
+//         await booking1.save()
+//         res.send("Booking Initiated")
+
+//         const ownerHTMLMsg = `
+//     <p><b>Hi  <br/> There is booking with id: ${booking1.bookingId} </p>
+//     `
+//         const userHTMLMsg = `
+//     <p><b>Hi ${user.name} <br/> We have initiated your booking soon you will receive email once the owner approve your booking </p>
+//     `
+//         sendMail(owner.email, ownerHTMLMsg)
+//         sendMail(user.email, userHTMLMsg)
+//     } catch (err) {
+//         res.status(500).json({ error: 'Internal Server Error' })
+//         console.log(err)
+//     }
+// }
+
 bookingCntrl.create = async (req, res) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -51,7 +90,26 @@ bookingCntrl.create = async (req, res) => {
         const owner = await User.findOne({ _id: property.ownerId })
         booking1.bookingId = str + count
         booking1.userId = req.user.id
+        booking1.userName = user.name
         booking1.status = "initiated"
+
+        //for totalAMount
+        const RoomTypes = await RoomType.find({propertyId:body.propertyId})
+        let RoomPrice = 0
+        body.Rooms.forEach((room1)=>{
+            const room = RoomTypes.find((ele)=> ele._id == room1.roomTypeId)
+            RoomPrice += (room.baseRoomPrice * room1.NumberOfRooms)
+        })
+
+        let PackagePrice = 0
+        body.packages.forEach((ele)=>{
+            const package = property.packages.find((pack)=> pack._id == ele.packId)
+            PackagePrice += Number(package.price)
+        })
+
+        booking1.totalAmount = (RoomPrice + PackagePrice) + ((RoomPrice + PackagePrice) * 0.12)
+
+
         await booking1.save()
         res.send("Booking Initiated")
 
@@ -127,7 +185,7 @@ bookingCntrl.changeStatus = async (req, res) => {
         const property = await Property.findOne({ ownerId: owner._id })
         const booking = await BookingModel.findOneAndUpdate({ _id: bookingId, propertyId: property._id }, { $set: { status: status } }, { new: true })
         const user = await User.findById(booking.userId)
-        const link = `http://localhost:3001/booking/${booking._id}`
+        const link = `http://localhost:3000/booking/payment/${booking._id}`
         if (booking.status == 'approved') {
             const userHTMLMsg = `
             <p><b>Hi ${user.name} <br/> Booking gets approved by owner, please use the <a href=${link}>link</a> to make the payment for your booking on ${String(booking.Date.checkIn).slice(0, 10)} at ${property.propertyName} </p>
@@ -151,7 +209,7 @@ bookingCntrl.changeStatus = async (req, res) => {
                     sendMail(user.email, userHTMLMsg)
                     console.log('Mail sent for giving priority to another one')
                 }
-            }, (1000 * 60))
+            }, (1000 * 120))
         } else if (booking.status == 'notApproved') {
             const userHTMLMsg = `
             <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, Booking gets not approved by owner,there are some maintainance work going on.`
@@ -203,7 +261,7 @@ bookingCntrl.listBookings = async (req, res) => {
 bookingCntrl.listOne = async (req, res) => {
     const id = req.params.id
     try {
-        const booking = await BookingModel.findOne({_id:id, isDeleted:"false"}) //chnages here on 04th April
+        const booking = await BookingModel.findOne({_id:id, isDeleted:"false"}).populate('Rooms.roomTypeId', ['roomType','_id']) //chnages here on 04th April
         res.json(booking)
     } catch (err) {
         console.log(err)

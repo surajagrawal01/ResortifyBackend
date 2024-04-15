@@ -1,6 +1,7 @@
 const User = require('../models/user-model')
 const _ = require('lodash')
 const reviewController = {}
+const Property = require("../models/property-model")
 const {validationResult} = require('express-validator')
 const Review = require('../models/review-model')
 
@@ -26,7 +27,16 @@ reviewController.create = async(req,res)=>{
             })
             review.propertyId = id
             review.userId = userId
-            review.save()
+
+            //
+            const noOfReviews = await Review.countDocuments({propertyId: id})
+            const property = Property.findById(id)
+            const prevRating = property.rating 
+            const newRating = ((prevRating * noOfReviews) + (body.ratings))/(noOfReviews + 1)
+            property.rating = newRating
+            await property.save()
+
+            await review.save()
             res.status(201).json(review)
         }catch(err){
             console.log(err)
