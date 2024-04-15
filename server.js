@@ -161,7 +161,7 @@ app.get('/api/bookings/:id', bookingCntrl.listOne )
 const paymentsCltr = require('./App/controllers/paymentController')
 
 // app.post('/api/create-checkout-session',authenticateUser, authorizeUser(['user']), paymentsCltr.pay)
-app.post('/api/create-checkout-session', paymentsCltr.pay)
+app.post('/api/create-checkout-session', authenticateUser, authorizeUser(['user']), paymentsCltr.pay)
 app.put('/api/payments/:id/success', paymentsCltr.successUpdate)
 app.put('/api/payments/:id/failed', paymentsCltr.failedUpdate)
 

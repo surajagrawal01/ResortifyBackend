@@ -19,27 +19,27 @@ const bookingValidaton = {
             }
         }
     },
-    userName: {
-        exists: {
-            errorMessage: 'name field is required'
-        },
-        notEmpty: {
-            errorMessage: 'name field must have some value'
-        },
-        trim: true,
-        isLength: {
-            options: { min: 3, max: 20 },
-            errorMessage: 'Username must be within 3 to 20 characters'
-        },
-        custom: {
-            options: value => {
-                // Check if the value contains only letters and spaces
-                return /^[A-Za-z\s]+$/.test(value);
-            },
-            errorMessage: 'Name cannot contain numbers or symbols'
-        },
+    // userName: {
+    //     exists: {
+    //         errorMessage: 'name field is required'
+    //     },
+    //     notEmpty: {
+    //         errorMessage: 'name field must have some value'
+    //     },
+    //     trim: true,
+    //     isLength: {
+    //         options: { min: 3, max: 20 },
+    //         errorMessage: 'Username must be within 3 to 20 characters'
+    //     },
+    //     custom: {
+    //         options: value => {
+    //             // Check if the value contains only letters and spaces
+    //             return /^[A-Za-z\s]+$/.test(value);
+    //         },
+    //         errorMessage: 'Name cannot contain numbers or symbols'
+    //     },
        
-    },
+    // },
     bookingCategory: {
         trim: true,
         exists: {
@@ -49,7 +49,7 @@ const bookingValidaton = {
             errorMessage: 'bookingCategory field must have some value'
         },
         isIn:{
-            options:[['dayout','nightout','wholeday']],
+            options:[['Day-Out','Night-Out','Whole-Day']],
             errorMessage:`booking Category must be one of three value 'dayout','nightout','wholeday'`
         }
     },
@@ -190,32 +190,32 @@ const bookingValidaton = {
             errorMessage:'paackages field value must be an array'
         }
     },
-    totalAmount: {
-        exists: {
-            errorMessage: 'totalAmount field is required'
-        },
-        notEmpty: {
-            errorMessage: 'totalAmount field must have some value'
-        },
-        isNumeric:{
-            errorMessage:'totalAmount field value must be an number'
-        }
-    },
-    contactNumber:{
-        exists: {
-            errorMessage: 'contact number field is required'
-        },
-        notEmpty: {
-            errorMessage: 'contact number field must have some value'
-        },
-        isNumeric:{
-            errorMessage:'contact number field value must be an number'
-        },
-        isLength:{
-            options:{min:10, max:10},
-            errorMessage:'contact number must be of 10 digits only'
-        }
-    }
+    // totalAmount: {
+    //     exists: {
+    //         errorMessage: 'totalAmount field is required'
+    //     },
+    //     notEmpty: {
+    //         errorMessage: 'totalAmount field must have some value'
+    //     },
+    //     isNumeric:{
+    //         errorMessage:'totalAmount field value must be an number'
+    //     }
+    // },
+    // contactNumber:{
+    //     exists: {
+    //         errorMessage: 'contact number field is required'
+    //     },
+    //     notEmpty: {
+    //         errorMessage: 'contact number field must have some value'
+    //     },
+    //     isNumeric:{
+    //         errorMessage:'contact number field value must be an number'
+    //     },
+    //     isLength:{
+    //         options:{min:10, max:10},
+    //         errorMessage:'contact number must be of 10 digits only'
+    //     }
+    // }
 }
 
 

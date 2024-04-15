@@ -17,8 +17,6 @@ const roomSchema = new Schema({
 				type:[Schema.Types.ObjectId],
 				ref:'Amenity'
 			}
-		
-	
 },{timestamps:true})
 const RoomType = model('RoomType',roomSchema)
 module.exports = RoomType
