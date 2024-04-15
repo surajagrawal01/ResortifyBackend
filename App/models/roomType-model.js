@@ -23,3 +23,4 @@ const roomSchema = new Schema(
 );
 const RoomType = model("RoomType", roomSchema);
 module.exports = RoomType;
+

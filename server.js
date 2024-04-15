@@ -302,6 +302,7 @@ app.post("/api/create-checkout-session", paymentsCltr.pay);
 app.put("/api/payments/:id/success", paymentsCltr.successUpdate);
 app.put("/api/payments/:id/failed", paymentsCltr.failedUpdate);
 
+
 // request for static data
 app.get("/api/static-data", dataController.list);
 
