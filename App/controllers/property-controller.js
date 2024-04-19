@@ -12,8 +12,7 @@ propertyController.list = async (req, res) => {
   try {
     const properties = await Property.find({
       isDeleted: false,
-      isApproved: true,
-    }); // find using isapproved
+    }).populate("ownerId"); // find using isapproved
     res.json(properties);
   } catch (err) {
     console.log(err);
@@ -153,23 +152,37 @@ propertyController.roomtypecreate = async (req, res) => {
     // const room = new Room(body);
     //creating types of rooms
     const property = await Property.findOne({ ownerId: req.user.id });
-    const totalRoomTypes = [];
+    const roomtype = new RoomType(roomTypesData);
+    roomtype.propertyId = property._id;
+    await roomtype.save();
+    // const totalRoomTypes = [];
 
-    roomTypesData.forEach((ele) => {
-      totalRoomTypes.push({ ...ele, propertyId: property._id });
-    });
+    // roomTypesData.forEach((ele) => {
+    //   totalRoomTypes.push({ ...ele, propertyId: property._id });
+    // });
     // console.log(totalRoomTypes);
 
-    const data = await RoomType.insertMany(totalRoomTypes);
-    console.log(data);
-    const roomTypes = await RoomType.find({ propertyId: property._id });
-    res.json(roomTypes);
-    console.log(roomTypes);
+    // const data = await RoomType.insertMany(totalRoomTypes);
+    // console.log(data);
+    // const roomTypes = await RoomType.find({ propertyId: property._id });
+    res.json(roomtype);
+    // console.log(roomTypes);
   } catch (err) {
     console.log(err);
   }
 };
-
+propertyController.generalModeList = async (req, res) => {
+  try {
+    const generalPropertyModel = await GenrealPropertyModel.find().populate(
+      "propertyId",
+      ["ownerId"]
+    );
+    res.json(generalPropertyModel);
+  } catch (err) {
+    console.log(err);
+    res.json({ error: "Internal Server Error" });
+  }
+};
 //update the information of resorts
 propertyController.update = async (req, res) => {
   const { id } = req.params;
@@ -185,15 +198,6 @@ propertyController.update = async (req, res) => {
     "propertyAmenities",
     "propertyPhotos",
   ]);
-  const generalmodelData = _.pick(req.body, [
-    "bookingPolicies",
-    "cancellationPolicies",
-    "refundPolicies",
-    "propertyRules",
-    "financeAndLegal",
-    "bankingDetails",
-  ]);
-
   try {
     const property = await Property.findOneAndUpdate(
       { _id: id, ownerId: req.user.id },
@@ -203,13 +207,28 @@ propertyController.update = async (req, res) => {
     if (!property) {
       return res.status(404).json({ error: "record not found!" });
     }
+    res.json({ property });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "internal server error" });
+  }
+};
+propertyController.updateGeneralModel = async (req, res) => {
+  const generalmodelData = _.pick(req.body, [
+    "bookingPolicies",
+    "cancellationPolicies",
+    "refundPolicies",
+    "propertyRules",
+    "financeAndLegal",
+    "bankingDetails",
+  ]);
+  try {
     const generalModel = await GenrealPropertyModel.findOneAndUpdate(
       { propertyId: property._id },
       generalmodelData,
       { new: true }
     );
-
-    res.json({ property, generalModel });
+    res.json({ generalModel });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "internal server error" });

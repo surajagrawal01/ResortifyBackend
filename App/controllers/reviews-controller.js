@@ -9,26 +9,14 @@ reviewController.create = async (req, res) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-
   const id = req.params.id;
   const body = _.pick(req.body, ["photos", "ratings", "description"]); //pick
   const userId = req.user.id;
   try {
-    // const user = await Review.findOne({propertyId:id,userId:userId})
-    // if(user){
-    //     return res.status(403).json('you have already gave the review for this resort')
-    // }
     const review = new Review(body);
-    req.files.forEach((ele, i) => {
-      review.photos[i] = ele.filename;
-    });
     review.propertyId = id;
     review.userId = userId;
     review.save();
-    //get all the reviews
-    // average it
-    // add property.reviews
-    //save
     res.status(201).json(review);
   } catch (err) {
     console.log(err);
@@ -85,6 +73,17 @@ reviewController.listOne = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "internal server error" });
+  }
+};
+reviewController.photos = (req, res) => {
+  const arr = [];
+  if (Array.isArray(req.files)) {
+    req.files.forEach((ele) => {
+      arr.push(ele.filename);
+    });
+    return res.json(arr);
+  } else {
+    return res.status(400).json("error in multer");
   }
 };
 module.exports = reviewController;
