@@ -41,6 +41,7 @@ reviewController.create = async (req, res) => {
   }
 };
 
+
 reviewController.update = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -81,17 +82,17 @@ reviewController.delete = async (req, res) => {
 };
 
 reviewController.listOne = async (req, res) => {
-  const id = req.params.id;
-  try {
-    const review = await Review.find({ propertyId: id });
-    if (!review) {
-      return res.status(404).json("record not found");
+    const id = req.params.id;
+    try {
+        const review = await Review.find({ propertyId: id });
+        if (!review) {
+            return res.status(404).json("record not found");
+        }
+        res.json(review);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "internal server error" });
     }
-    res.json(review);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "internal server error" });
-  }
 };
 reviewController.photos = (req, res) => {
   const arr = [];

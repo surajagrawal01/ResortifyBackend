@@ -245,11 +245,30 @@ bookingCntrl.changeCheckInOut = async (req, res) => {
     }
 }
 
-//for listing booking related to particularowner
-bookingCntrl.listBookings = async (req, res) => {
+//for today listing booking related to particularowner
+bookingCntrl.listTodayBookings = async (req, res) => {
+    const from = req.query.from
+    const to = new Date(req.query.to).setHours(23, 59, 59, 999)
     try {
+        const rangeQuery = {$gte: new Date(from), $lte: new Date(to)}
         const property = await Property.findOne({ ownerId: req.user.id })
-        const bookings = await BookingModel.find({ propertyId: property._id}).populate('Rooms.roomTypeId',['roomType','_id']).sort({_id:-1})
+        const bookings = await BookingModel.find({ propertyId: property._id, createdAt: rangeQuery}).populate('Rooms.roomTypeId',['roomType','_id']).sort({_id:-1})
+        res.json(bookings)
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
+}
+
+//for listing booking related to particularowner for particular range
+bookingCntrl.listBookings = async (req, res) => {
+    const from = req.query.from
+    const to = new Date(req.query.to).setHours(23, 59, 59, 999)
+    try {
+        const checkInQuery = {$gte: new Date(from)}
+        const checkOutQuery = {$lte : to}
+        const property = await Property.findOne({ ownerId: req.user.id })
+        const bookings = await BookingModel.find({ propertyId: property._id, 'Date.checkIn': checkInQuery, 'Date.checkOut': checkOutQuery}).populate('Rooms.roomTypeId',['roomType','_id']).sort({_id:-1})
         res.json(bookings)
     } catch (err) {
         console.log(err)

@@ -5,6 +5,7 @@ const Room = require("../models/room-model");
 const { validationResult } = require("express-validator");
 const _ = require("lodash");
 const Review = require("../models/review-model");
+const BookingModel = require("../models/booking-model");
 const propertyController = {};
 
 // list the resorts
@@ -86,6 +87,7 @@ propertyController.list = async (req, res) => {
 //         res.status(500).json({error:'internal server error'})
 //     }
 // }
+
 propertyController.propertycreate = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -115,6 +117,7 @@ propertyController.propertycreate = async (req, res) => {
     console.log(err);
   }
 };
+
 // for general model
 propertyController.generalModelCreate = async (req, res) => {
   // const errors = validationResult(req)
@@ -141,6 +144,7 @@ propertyController.generalModelCreate = async (req, res) => {
     res.status(500).json({ error: "internal server error" });
   }
 };
+
 propertyController.roomtypecreate = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -271,6 +275,12 @@ propertyController.delete = async (req, res) => {
 // get one record of the resort
 propertyController.listOne = async (req, res) => {
   const { id } = req.params; // req.user.id
+  const checkIn = req.query.checkIn
+  const checkOut = new Date( req.query.checkOut).setHours(23, 59, 59, 999)
+
+  const checkInQuery = {$gte:new Date(checkIn)}
+  const checkOutQuery = {$lte:new Date(checkOut)}
+
   try {
     const property = await Property.findOne({ _id: id });
     const roomTypes = await RoomType.find({
@@ -283,8 +293,10 @@ propertyController.listOne = async (req, res) => {
       "userId",
       ["_id", "name"]
     );
+    //all bookings in this particular range
+    const bookings = await BookingModel.find({propertyId:id, 'Date.checkIn':checkInQuery, 'Date.checkOut':checkOutQuery}).populate('Rooms.roomTypeId',['_id','roomType','NumberOfRooms'])
     // get the rooms based on booking status
-    res.json({ property, generalProperyData, roomTypes, reviews });
+    res.json({ property, generalProperyData, roomTypes, reviews, bookings });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "internal server error" });
@@ -354,12 +366,35 @@ propertyController.documents = (req, res) => {
 //based on query - By Suraj on 04th April 2024
 propertyController.lists = async (req, res) => {
   const city = req.query.city;
+  const limit = parseInt(req.query.limit);
+  const page = parseInt(req.query.page)
+  const searchQuery = { "location.city": city }
+  const maxPrice = req.query.maxPrice || Infinity
+  const minPrice = req.query.minPrice || 0
+  const rating = Boolean(req.query.rating) ? req.query.rating : 0 
+
+  const ratingQuery = {rating:{$gte:rating}}
+  const priceQuery = {basePrice : {$gte:minPrice, $lte: maxPrice}}
+  console.log(priceQuery, ratingQuery)
+  const findQuery = {...searchQuery, ...priceQuery, ...ratingQuery}
+  console.log(findQuery)
+
+  console.log(minPrice, maxPrice, rating)
   try {
-    const properties = await Property.find({ "location.city": city }).populate(
+    const properties = await Property.find(findQuery)
+    .skip((page-1) * limit)
+    .limit(limit)
+    .populate(
       "propertyAmenities",
       ["_id", "name"]
     );
-    res.json(properties);
+    const total = await Property.countDocuments(findQuery)
+    res.json({
+        data:properties,
+        total,
+        page,
+        totalPages : Math.ceil(total/limit)
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "internal server error" });

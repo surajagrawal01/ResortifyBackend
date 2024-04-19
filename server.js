@@ -283,7 +283,15 @@ app.put(
   checkSchema(bookingCancelSchema),
   bookingCntrl.cancellation
 );
-//for all bookings
+//for all today bookings
+app.get(
+  "/api/today/bookings",
+  authenticateUser,
+  authorizeUser(["owner"]),
+  bookingCntrl.listTodayBookings
+);
+
+//for all bookings in given range
 app.get(
   "/api/bookings",
   authenticateUser,
