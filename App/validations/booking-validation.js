@@ -40,19 +40,19 @@ const bookingValidaton = {
     //     },
        
     // },
-    bookingCategory: {
-        trim: true,
-        exists: {
-            errorMessage: 'bookingCategory field is required'
-        },
-        notEmpty: {
-            errorMessage: 'bookingCategory field must have some value'
-        },
-        isIn:{
-            options:[['Day-Out','Night-Out','Whole-Day']],
-            errorMessage:`booking Category must be one of three value 'dayout','nightout','wholeday'`
-        }
-    },
+    // bookingCategory: {
+    //     trim: true,
+    //     exists: {
+    //         errorMessage: 'bookingCategory field is required'
+    //     },
+    //     notEmpty: {
+    //         errorMessage: 'bookingCategory field must have some value'
+    //     },
+    //     isIn:{
+    //         options:[['Day-Out','Night-Out','Whole-Day']],
+    //         errorMessage:`booking Category must be one of three value 'dayout','nightout','wholeday'`
+    //     }
+    // },
     Date: {
         exists: {
             errorMessage: 'Date field is required'
