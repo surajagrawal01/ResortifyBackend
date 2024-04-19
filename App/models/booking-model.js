@@ -19,7 +19,14 @@ const bookingModel = new Schema(
         NumberOfRooms: Number,
       },
     ],
-    packages: [String],
+    packages: {
+      type: [
+        {
+          packId: Schema.Types.ObjectId,
+          packageName: String,
+        },
+      ],
+    },
     totalAmount: Number,
     status: String, //notApproved / approved
     isPaymentDone: {

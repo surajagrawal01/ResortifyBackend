@@ -44,14 +44,14 @@ paymentsCltr.pay = async(req,res)=>{
                 quantity: 1
             }],
             mode:"payment",
-            success_url:"http://localhost:3001/success",
-            cancel_url: "http://localhost:3001/cancel",
+            success_url:"http://localhost:3000/success",
+            cancel_url: "http://localhost:3000/cancel",
             customer : customer.id
         })
         
         //create a payment
         const payment = new Payment()
-        payment.bookingId= body.bookingId
+        payment.bookingId = body.bookingId
         payment.transactionId = session.id
         // payment.productName=body.productName
         payment.amount = Number(body.totalAmount)
