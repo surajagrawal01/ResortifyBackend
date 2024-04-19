@@ -175,7 +175,6 @@ app.put(
   "/api/owners/propertydetails/rooms/:id",
   authenticateUser,
   authorizeUser(["owner"]),
-  checkSchema(roomValidationSchema),
   roomController.update
 );
 // delete a room
@@ -231,7 +230,7 @@ app.post(
   "/api/users/reviews/:id",
   authenticateUser,
   authorizeUser(["user"]),
-  upload.array("reviewImage", 5),
+  upload.array("files", 5),
   checkSchema(reviewValidationSchema),
   reviewController.create
 );
@@ -347,6 +346,19 @@ app.post(
   authenticateUser,
   authorizeUser(["owner"]),
   propertyController.roomtypecreate
+);
+app.post(
+  "/api/reviewsphotos",
+  authenticateUser,
+  authorizeUser(["user"]),
+  upload.array("files"),
+  reviewController.photos
+);
+app.get(
+  "/api/generalmodel",
+  authenticateUser,
+  authorizeUser(["admin"]),
+  propertyController.generalModeList
 );
 app.listen(port, () => {
   console.log("Server runnning on port" + " " + port);

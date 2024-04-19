@@ -49,7 +49,7 @@ const propertySchema = new Schema(
     basePrice: Number,
     rating: {
       type: Number,
-      default: 3,
+      default: 0,
     },
   },
   { timestamps: true }
