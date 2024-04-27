@@ -1,4 +1,5 @@
 const User = require("../models/user-model");
+const Booking = require("../models/booking-model");
 const _ = require("lodash");
 const reviewController = {};
 const Property = require("../models/property-model");
@@ -13,34 +14,39 @@ reviewController.create = async (req, res) => {
   const id = req.params.id;
   const body = _.pick(req.body, ["photos", "ratings", "description"]); //pick
   const userId = req.user.id;
+  const bookingId = req.query.bookingId;
+  //find the booking
+  //make the changes and save it
   try {
     // const user = await Review.findOne({propertyId:id,userId:userId})
     // if(user){
     //     return res.status(403).json('you have already gave the review for this resort')
     // }
     const review = new Review(body);
-    req.files.forEach((ele, i) => {
-      review.photos[i] = ele.filename;
-    });
+
     review.propertyId = id;
     review.userId = userId;
 
     //
     const noOfReviews = await Review.countDocuments({ propertyId: id });
-    const property = Property.findById(id);
+    const property = await Property.findById(id);
     const prevRating = property.rating;
     const newRating =
       (prevRating * noOfReviews + body.ratings) / (noOfReviews + 1);
     property.rating = newRating;
     await property.save();
     await review.save();
+    const booking = await Booking.findOneAndUpdate(
+      { bookingId: bookingId },
+      { $set: { isReview: true} },
+      { new: true }
+    );
     res.status(201).json(review);
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "internal server error" });
   }
 };
-
 
 reviewController.update = async (req, res) => {
   const errors = validationResult(req);
@@ -82,17 +88,17 @@ reviewController.delete = async (req, res) => {
 };
 
 reviewController.listOne = async (req, res) => {
-    const id = req.params.id;
-    try {
-        const review = await Review.find({ propertyId: id });
-        if (!review) {
-            return res.status(404).json("record not found");
-        }
-        res.json(review);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: "internal server error" });
+  const id = req.params.id;
+  try {
+    const review = await Review.find({ propertyId: id });
+    if (!review) {
+      return res.status(404).json("record not found");
     }
+    res.json(review);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "internal server error" });
+  }
 };
 reviewController.photos = (req, res) => {
   const arr = [];

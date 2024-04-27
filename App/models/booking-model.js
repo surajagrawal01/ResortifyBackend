@@ -4,9 +4,16 @@ const bookingModel = new Schema(
   {
     bookingId: String,
     userId: Schema.Types.ObjectId,
-    propertyId: Schema.Types.ObjectId, // Property model
+    propertyId: {
+      type: Schema.Types.ObjectId,
+      ref: "Property",
+    }, // Property model
     userName: String,
     bookingCategory: String,
+    isReview: {
+      type: Boolean,
+      default: false,
+    },
     Date: { checkIn: Date, checkOut: Date },
     guests: { adult: Number, children: Number },
     contactNumber: Number,
