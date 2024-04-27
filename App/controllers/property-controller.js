@@ -2,11 +2,14 @@ const Property = require("../models/property-model");
 const GenrealPropertyModel = require("../models/general-property-model");
 const RoomType = require("../models/roomType-model");
 const Room = require("../models/room-model");
+const User = require("../models/user-model");
 const { validationResult } = require("express-validator");
 const _ = require("lodash");
 const Review = require("../models/review-model");
 const BookingModel = require("../models/booking-model");
 const propertyController = {};
+
+const { ObjectId } = require("mongodb");
 
 // list the resorts
 propertyController.list = async (req, res) => {
@@ -159,7 +162,8 @@ propertyController.roomtypecreate = async (req, res) => {
     const roomtype = new RoomType(roomTypesData);
     roomtype.propertyId = property._id;
     await roomtype.save();
-    // const totalRoomTypes = [];
+
+    //  const totalRoomTypes = [];
 
     // roomTypesData.forEach((ele) => {
     //   totalRoomTypes.push({ ...ele, propertyId: property._id });
@@ -171,6 +175,24 @@ propertyController.roomtypecreate = async (req, res) => {
     // const roomTypes = await RoomType.find({ propertyId: property._id });
     res.json(roomtype);
     // console.log(roomTypes);
+  } catch (err) {
+    console.log(err);
+  }
+};
+propertyController.addRooms = async (req, res) => {
+  const id = req.params.id;
+
+  console.log(propertyid);
+  try {
+    // const result = await RoomType.aggregate([
+    //   { $match: { propertyId: objectId } },
+    //   {
+    //     $group: { _id: "$propertyId", addedRooms: { $sum: "$NumberOfRooms" } },
+    //   },
+    // ]);
+    // const result = await RoomType.find({ propertyId: propertyid });
+    console.log(propertyid);
+    res.json(propertyid);
   } catch (err) {
     console.log(err);
   }
@@ -274,12 +296,13 @@ propertyController.delete = async (req, res) => {
 
 // get one record of the resort
 propertyController.listOne = async (req, res) => {
-  const { id } = req.params; // req.user.id
-  const checkIn = req.query.checkIn
-  const checkOut = new Date( req.query.checkOut).setHours(23, 59, 59, 999)
+  const { id } = req.params;
 
-  const checkInQuery = {$gte:new Date(checkIn)}
-  const checkOutQuery = {$lte:new Date(checkOut)}
+  const checkIn = req.query.checkIn;
+  const checkOut = new Date(req.query.checkOut).setHours(23, 59, 59, 999);
+
+  const checkInQuery = { $gte: new Date(checkIn) };
+  const checkOutQuery = { $lte: new Date(checkOut) };
 
   try {
     const property = await Property.findOne({ _id: id });
@@ -294,7 +317,58 @@ propertyController.listOne = async (req, res) => {
       ["_id", "name"]
     );
     //all bookings in this particular range
-    const bookings = await BookingModel.find({propertyId:id, 'Date.checkIn':checkInQuery, 'Date.checkOut':checkOutQuery}).populate('Rooms.roomTypeId',['_id','roomType','NumberOfRooms'])
+    const bookings = await BookingModel.find({
+      propertyId: id,
+      "Date.checkIn": checkInQuery,
+      "Date.checkOut": checkOutQuery,
+    }).populate("Rooms.roomTypeId", ["_id", "roomType", "NumberOfRooms"]);
+
+    // get the rooms based on booking status
+    res.json({ property, generalProperyData, roomTypes, reviews, bookings });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "internal server error" });
+  }
+};
+
+// controller for user to store his recent searches
+
+propertyController.listForMySearches = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id; // will come from the token
+  const checkIn = req.query.checkIn;
+  const checkOut = new Date(req.query.checkOut).setHours(23, 59, 59, 999);
+
+  const checkInQuery = { $gte: new Date(checkIn) };
+  const checkOutQuery = { $lte: new Date(checkOut) };
+
+  try {
+    const property = await Property.findOne({ _id: id });
+    const roomTypes = await RoomType.find({
+      propertyId: property._id,
+    }).populate("roomAmentities", ["_id", "name"]);
+    const generalProperyData = await GenrealPropertyModel.findOne({
+      propertyId: property._id,
+    });
+    const reviews = await Review.find({ propertyId: property._id }).populate(
+      "userId",
+      ["_id", "name"]
+    );
+    //all bookings in this particular range
+    const bookings = await BookingModel.find({
+      propertyId: id,
+      "Date.checkIn": checkInQuery,
+      "Date.checkOut": checkOutQuery,
+    }).populate("Rooms.roomTypeId", ["_id", "roomType", "NumberOfRooms"]);
+
+    // changes to include recent searches
+
+    const user = await User.findOne({ _id: userId });
+    if (!user.recentSearches.includes(property._id)) {
+      user.recentSearches = [...user.recentSearches, property._id];
+    }
+
+    await user.save();
     // get the rooms based on booking status
     res.json({ property, generalProperyData, roomTypes, reviews, bookings });
   } catch (err) {
@@ -364,41 +438,62 @@ propertyController.documents = (req, res) => {
 };
 
 //based on query - By Suraj on 04th April 2024
+
 propertyController.lists = async (req, res) => {
   const city = req.query.city;
   const limit = parseInt(req.query.limit);
-  const page = parseInt(req.query.page)
-  const searchQuery = { "location.city": city }
-  const maxPrice = req.query.maxPrice || Infinity
-  const minPrice = req.query.minPrice || 0
-  const rating = Boolean(req.query.rating) ? req.query.rating : 0 
+  const page = parseInt(req.query.page);
+  const searchQuery = { "location.city": city };
+  const maxPrice = req.query.maxPrice || Infinity;
+  const minPrice = req.query.minPrice || 0;
+  const rating = req.query.rating === "null" ? 0 : req.query.rating;
 
-  const ratingQuery = {rating:{$gte:rating}}
-  const priceQuery = {basePrice : {$gte:minPrice, $lte: maxPrice}}
-  console.log(priceQuery, ratingQuery)
-  const findQuery = {...searchQuery, ...priceQuery, ...ratingQuery}
-  console.log(findQuery)
+  // changes for sort by Sufal
+  const order = req.query.order === "undefined" ? "low" : req.query.order;
+  console.log(req.query);
+  const value = order === "low" ? 1 : -1;
+  console.log(value);
+  const sortQuery = {};
+  sortQuery["basePrice"] = value;
+  console.log(sortQuery);
+  //
+  const ratingQuery = { rating: { $gte: rating } };
+  const priceQuery = { basePrice: { $gte: minPrice, $lte: maxPrice } };
+  console.log(priceQuery, ratingQuery);
+  const findQuery = {
+    ...searchQuery,
+    ...priceQuery,
+    ...ratingQuery,
+  };
+  console.log(findQuery);
 
-  console.log(minPrice, maxPrice, rating)
+  console.log(minPrice, maxPrice, rating);
   try {
     const properties = await Property.find(findQuery)
-    .skip((page-1) * limit)
-    .limit(limit)
-    .populate(
-      "propertyAmenities",
-      ["_id", "name"]
-    );
-    const total = await Property.countDocuments(findQuery)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort(sortQuery)
+      .populate("propertyAmenities", ["_id", "name"]);
+    const total = await Property.countDocuments(findQuery);
     res.json({
-        data:properties,
-        total,
-        page,
-        totalPages : Math.ceil(total/limit)
+      data: properties,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
     });
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "internal server error" });
   }
 };
+// propertyController.Stats =async(req,res)=>{
+//   try{
+//     const response =
+//   }
+//   catch(err){
+
+//   }
+
+// }
 
 module.exports = propertyController;
