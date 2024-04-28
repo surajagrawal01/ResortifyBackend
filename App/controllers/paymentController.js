@@ -1,9 +1,12 @@
 const Payment = require('../models/payment-model')
+const sendMail = require("../../Utility.js/nodemailer")
 const { validationResult } = require('express-validator')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const {pick} = require('lodash')
 const BookingModel = require('../models/booking-model')
+const Property = require('../models/property-model')
 const paymentsCltr={}
+
 
 paymentsCltr.pay = async(req,res)=>{
     const errors = validationResult(req)
@@ -73,6 +76,15 @@ paymentsCltr.successUpdate=async(req,res)=>{
         }
         const updatedPayment = await Payment.findOneAndUpdate({transactionId:id}, {$set:{paymentStatus:'success'}},{new:true}) 
         const updatedBooking = await BookingModel.findOneAndUpdate({bookingId:updatedPayment.bookingId}, {$set:{isPaymentDone:'true'}}, {new:true})
+        //only access one property instead of all and sendmail ton user and owner once payment done and remove the send mail otpion for isPayment true in booking controller
+        const booking = await BookingModel.findOne({bookingId:updatedPayment.bookingId}).select(['_id', 'userId','propertyId']).populate('userId',['_id','email','name'])
+        const property = await Property.findById(booking.propertyId).select(['_id','ownerId']).populate('ownerId', ['_id', 'email'])
+        const userHTMLMsg = `
+                    <p><b>Hi ${booking.userId.name} <br/> Payment Done Booking Successful ${updatedBooking.bookingId}. <br/> Thank you for choosing Resotify`
+        const ownerHTMLMsg = `
+                    <p><b>Hi <br/>Pyament Done Booking Confirmed for ${updatedBooking.bookingId}.`
+        sendMail(booking.userId.email, userHTMLMsg)
+        sendMail(property.ownerId.email, ownerHTMLMsg)
         res.json(updatedPayment)
     }catch(err){
         console.log(err)

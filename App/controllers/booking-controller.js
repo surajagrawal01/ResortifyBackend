@@ -1,36 +1,12 @@
-const { validationResult } = require("express-validator");
-const BookingModel = require("../models/booking-model");
-const Property = require("../models/property-model");
-const User = require("../models/user-model");
-const _ = require("lodash");
-const nodemailer = require("nodemailer");
-const RoomType = require("../models/roomType-model");
+const { validationResult } = require("express-validator")
+const sendMail = require("../../Utility.js/nodemailer")
+const BookingModel = require("../models/booking-model")
+const Property = require("../models/property-model")
+const User = require("../models/user-model")
+const _ = require("lodash")
+const RoomType = require("../models/roomType-model")
+const bookingCntrl = {}
 const { format } = require("date-fns");
-const bookingCntrl = {};
-
-//for sendingMail
-const sendMail = (userMail, html) => {
-  let transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_USERNAME,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-
-  async function mailSend() {
-    // send mail with defined transport object
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_USERNAME, // sender address
-      to: userMail, // list of receivers
-      subject: "Registration Confirmation", // Subject line
-      html: html, // html body
-    });
-  }
-  mailSend().catch(console.error);
-};
 
 //for new booking
 // bookingCntrl.create = async (req, res) => {
@@ -188,62 +164,43 @@ bookingCntrl.create = async (req, res) => {
 
 //toChangestatus with mail of bookingId
 bookingCntrl.changeStatus = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  const bookingId = req.params.id;
-  const status = req.query.status;
-  try {
-    const owner = await User.findOne({ _id: req.user.id });
-    const property = await Property.findOne({ ownerId: owner._id });
-    const booking = await BookingModel.findOneAndUpdate(
-      { _id: bookingId, propertyId: property._id },
-      { $set: { status: status } },
-      { new: true }
-    );
-    const user = await User.findById(booking.userId);
-    const link = `http://localhost:3000/booking/payment/${booking._id}`;
-    if (booking.status == "approved") {
-      const userHTMLMsg = `
-            <p><b>Hi ${
-              user.name
-            } <br/> Booking gets approved by owner, please use the <a href=${link}>link</a> to make the payment for your booking on ${String(
-        booking.Date.checkIn
-      ).slice(0, 10)} at ${property.propertyName} </p>
-            `;
-      sendMail(user.email, userHTMLMsg);
-      res.json(booking);
-      setTimeout(async () => {
-        const booking = await BookingModel.findOne({
-          _id: bookingId,
-          propertyId: property._id,
-        });
-        if (booking.isPaymentDone == "true") {
-          const ownerHTMLMsg = `
-                    <p><b>Hi <br/>Pyament Done Booking Confirmed for ${booking.bookingId}.`;
-          sendMail(owner.email, ownerHTMLMsg);
-          const userHTMLMsg = `
-                    <p><b>Hi ${user.name} <br/> Payment Done Booking Successful ${booking.bookingId}.`;
-          sendMail(user.email, userHTMLMsg);
-        } else {
-          //to delete the record if payment not done within given period of time
-          const bookingDelete = await BookingModel.findOneAndUpdate(
-            { bookingId: booking.bookingId },
-            { $set: { isDeleted: "true" } }
-          ); //change on 4th April
-          const userHTMLMsg = `
-                    <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, You didn't completed the payment so we are giving priority to another one.`;
-          sendMail(user.email, userHTMLMsg);
-          console.log("Mail sent for giving priority to another one");
-        }
-      }, 1000 * 120);
-    } else if (booking.status == "notApproved") {
-      const userHTMLMsg = `
-            <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, Booking gets not approved by owner,there are some maintainance work going on.`;
-      sendMail(user.email, userHTMLMsg);
-      res.json(booking);
+    const errors = validationResult(req)
+    if(!errors.isEmpty()){
+        return res.status(400).json({errors:errors.array()})
     }
+    const bookingId = req.params.id
+    const status = req.query.status
+    try {
+        const owner = await User.findOne({_id:req.user.id})
+        const property = await Property.findOne({ ownerId: owner._id })
+        const booking = await BookingModel.findOneAndUpdate({ _id: bookingId, propertyId: property._id }, { $set: { status: status } }, { new: true })
+        const user = await User.findById(booking.userId)
+        const link = `http://localhost:3000/booking/payment/${booking._id}`
+        if (booking.status == 'approved') {
+            const userHTMLMsg = `
+            <p><b>Hi ${user.name} <br/> Booking gets approved by owner, please use the <a href=${link}>link</a> to make the payment for your booking on ${String(booking.Date.checkIn).slice(0, 10)} at ${property.propertyName} </p>
+            `
+            sendMail(user.email, userHTMLMsg)
+            res.json(booking)
+            setTimeout(async() => {
+                const booking = await BookingModel.findOne({ _id: bookingId, propertyId: property._id })
+                if (booking.isPaymentDone == 'true') {
+                    
+                } else {
+                    //to delete the record if payment not done within given period of time
+                    const bookingDelete = await BookingModel.findOneAndUpdate({bookingId:booking.bookingId}, {$set:{isDeleted:"true"}}) //change on 4th April
+                    const userHTMLMsg = `
+                    <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, You didn't completed the payment so we are giving priority to another one.`
+                    sendMail(user.email, userHTMLMsg)
+                    console.log('Mail sent for giving priority to another one')
+                }
+            }, (1000 * 120))
+        } else if (booking.status == 'notApproved') {
+            const userHTMLMsg = `
+            <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, Booking gets not approved by owner,there are some maintainance work going on.`
+            sendMail(user.email, userHTMLMsg)
+            res.json(booking)
+        }
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -283,23 +240,23 @@ bookingCntrl.changeCheckInOut = async (req, res) => {
 
 //for today listing booking related to particularowner
 bookingCntrl.listTodayBookings = async (req, res) => {
-  const from = req.query.from;
-  const to = new Date(req.query.to).setHours(23, 59, 59, 999);
-  try {
-    const rangeQuery = { $gte: new Date(from), $lte: new Date(to) };
-    const property = await Property.findOne({ ownerId: req.user.id });
-    const bookings = await BookingModel.find({
-      propertyId: property._id,
-      createdAt: rangeQuery,
-    })
-      .populate("Rooms.roomTypeId", ["roomType", "_id"])
-      .sort({ _id: -1 });
-    res.json(bookings);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
+    const from = req.query.from
+    const to = new Date(req.query.to).setHours(23, 59, 59, 999)
+    try {
+        const rangeQuery = {$gte: new Date(from), $lte: new Date(to)}
+        const property = await Property.findOne({ ownerId: req.user.id })
+        let bookings 
+        if(property){
+            bookings = await BookingModel.find({ propertyId: property._id, createdAt: rangeQuery}).populate('Rooms.roomTypeId',['roomType','_id']).sort({_id:-1})
+        }else{
+            bookings = []
+        }
+        res.json(bookings)
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
+}
 
 //for listing booking related to particularowner for particular range
 bookingCntrl.listBookings = async (req, res) => {

@@ -442,32 +442,20 @@ propertyController.documents = (req, res) => {
 propertyController.lists = async (req, res) => {
   const city = req.query.city;
   const limit = parseInt(req.query.limit);
-  const page = parseInt(req.query.page);
-  const searchQuery = { "location.city": city };
-  const maxPrice = req.query.maxPrice || Infinity;
-  const minPrice = req.query.minPrice || 0;
-  const rating = req.query.rating === "null" ? 0 : req.query.rating;
+  const page = parseInt(req.query.page)
+  const searchQuery = { "location.city": city }
+  const maxPrice = req.query.maxPrice || Infinity
+  const minPrice = req.query.minPrice || 0
+  const rating = Boolean(req.query.rating) ? req.query.rating : 0 
+  const ratingQuery = {rating:{$gte:rating}}
+  const priceQuery = {basePrice : {$gte:minPrice, $lte: maxPrice}}
+  const findQuery = {...searchQuery, ...priceQuery, ...ratingQuery}
 
   // changes for sort by Sufal
   const order = req.query.order === "undefined" ? "low" : req.query.order;
-  console.log(req.query);
   const value = order === "low" ? 1 : -1;
-  console.log(value);
   const sortQuery = {};
   sortQuery["basePrice"] = value;
-  console.log(sortQuery);
-  //
-  const ratingQuery = { rating: { $gte: rating } };
-  const priceQuery = { basePrice: { $gte: minPrice, $lte: maxPrice } };
-  console.log(priceQuery, ratingQuery);
-  const findQuery = {
-    ...searchQuery,
-    ...priceQuery,
-    ...ratingQuery,
-  };
-  console.log(findQuery);
-
-  console.log(minPrice, maxPrice, rating);
   try {
     const properties = await Property.find(findQuery)
       .skip((page - 1) * limit)
@@ -486,6 +474,7 @@ propertyController.lists = async (req, res) => {
     res.status(500).json({ error: "internal server error" });
   }
 };
+
 propertyController.Stats = async (req, res) => {
   try {
     const response = await Property.aggregate([

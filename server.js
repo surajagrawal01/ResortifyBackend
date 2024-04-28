@@ -1,5 +1,7 @@
 require("dotenv").config();
 const express = require("express");
+const http = require("http")
+const { Server } = require("socket.io")
 const { checkSchema } = require("express-validator");
 const multer = require("multer"); //require multer
 const cors = require("cors");
@@ -12,6 +14,19 @@ const port = 3060;
 //databaseConfiguration
 const configDb = require("./config/db");
 configDb();
+
+
+const server = http.createServer(app)
+const adminSocketId = 'admin'; // Fixed socket ID for admin
+
+
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+})
 
 /////=>suraj
 
@@ -385,6 +400,7 @@ app.get(
   authorizeUser(["admin"]),
   propertyController.generalModeList
 );
+
 app.get(
   "/api/bookingstats",
   authenticateUser,
@@ -392,6 +408,59 @@ app.get(
   bookingCntrl.Stats
 );
 
-app.listen(port, () => {
+//Chat Support System
+// Admin namespace
+const adminNamespace = io.of('/admin');
+
+// Event listener for admin connections
+adminNamespace.on('connection', (socket) => {
+    // Emit event when admin socket connects
+    console.log('Admin connected');
+
+    //to join admin to adminSocketId
+    socket.join(adminSocketId)
+
+    // Handle admin messages
+    socket.on('adminMessage', (message) => {
+        console.log('Admin message:', message);
+        // Broadcast admin message to all connected users
+        io.emit('adminMessage', message);
+    });
+
+    socket.on('admin_message', (data) => {
+        const { socketId, adminMsg } = data
+        console.log(socketId, adminMsg)
+
+        io.to(socketId).emit('admin_response', { socketId, adminMsg })
+    })
+
+
+    socket.on("disconnect", () => {
+        console.log("user Disconnected", socket.id)
+    })
+});
+
+
+io.on("connection", (socket) => {
+    console.log("user connected", socket.id)
+
+    // Store the socket ID in the map
+    socket.emit('welcome_msg','Welcome to Resotify...')
+    adminNamespace.to(adminSocketId).emit('new_user', socket.id);
+
+    socket.on("disconnect", () => {
+        console.log("user Disconnected", socket.id)
+        adminNamespace.to(adminSocketId).emit('user_disconnected', socket.id);
+    })
+
+    socket.on('user_message', (data) => {
+        console.log('User message:', data);
+        // Forward user message to admin
+        adminNamespace.to(adminSocketId).emit('userMessage', data);
+    });
+})
+
+
+server.listen(port, () => {
   console.log("Server runnning on port" + " " + port);
 });

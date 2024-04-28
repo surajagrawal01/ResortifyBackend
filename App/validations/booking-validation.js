@@ -76,7 +76,9 @@ const bookingValidaton = {
         },
         custom:{
             options:function(val){
-                if(format(new Date(val), 'dd/MM/yyyy') < format(new Date(), 'dd/MM/yyyy')){
+                const checkIn = format(new Date(val), 'dd/MM/yyyy')
+                const todayDate = format(new Date(), 'dd/MM/yyyy')
+                if( new Date(checkIn) > new Date(todayDate) ){
                     throw new Error("checkIn date should be greater than or equal to today's date")
                 }
                 return true
@@ -96,7 +98,9 @@ const bookingValidaton = {
         },
         custom:{
             options:function(val, {req}){
-                if(format(new Date(val),'dd/MM/yyyy') < format(new Date(req.body.Date.checkIn), 'dd/MM/yyyy')){
+                const checkOutDate = (format(new Date(val),'dd/MM/yyyy'))
+                const checkInDate = (format(new Date(req.body.Date.checkIn), 'dd/MM/yyyy'))
+                if(new Date(checkOutDate) < new Date(checkInDate) ){
                     throw new Error("checkOut date should be greater than or equal to checkin date")
                 }
                 return true
