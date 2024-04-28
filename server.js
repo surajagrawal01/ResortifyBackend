@@ -145,6 +145,7 @@ app.get(
   authorizeUser(["user"]),
   propertyController.listForMySearches
 );
+app.get("/api/propertyStats", propertyController.Stats);
 // create the resort
 // app.post(
 //   "/api/owners/propertydetails",
