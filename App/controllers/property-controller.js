@@ -486,14 +486,38 @@ propertyController.lists = async (req, res) => {
     res.status(500).json({ error: "internal server error" });
   }
 };
-// propertyController.Stats =async(req,res)=>{
-//   try{
-//     const response =
-//   }
-//   catch(err){
-
-//   }
-
-// }
+propertyController.Stats = async (req, res) => {
+  try {
+    const response = await Property.aggregate([
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, // Group by month and year
+          totalProperties: { $sum: 1 }, // Count the properties
+        },
+      },
+      { $sort: { _id: 1 } }, // Optionally sort the result by month/year
+    ]);
+    const resortTotal = {};
+    response.forEach((ele) => {
+      const month = new Date(ele._id).toLocaleString("en-us", {
+        month: "short",
+      });
+      if (!resortTotal[month]) {
+        resortTotal[month] = 0;
+      }
+      resortTotal[month] += ele.totalProperties;
+    });
+    const result = Object.entries(resortTotal).map(
+      ([month, totalProperties]) => ({
+        month: month,
+        resort: totalProperties,
+      })
+    );
+    res.json(result);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "internal server error" });
+  }
+};
 
 module.exports = propertyController;
