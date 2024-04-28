@@ -11,6 +11,10 @@ const roomSchema = new Schema(
       type: { adult: Number, children: Number },
       default: { adult: 2, children: 2 },
     },
+    addedRooms: {
+      type: Number,
+      default: 0,
+    },
     baseRoomPrice: Number,
     photos: [String],
     availability: { startDate: Date, endDate: Date },
@@ -23,4 +27,3 @@ const roomSchema = new Schema(
 );
 const RoomType = model("RoomType", roomSchema);
 module.exports = RoomType;
-

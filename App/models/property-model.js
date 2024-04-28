@@ -46,6 +46,7 @@ const propertySchema = new Schema(
       type: Boolean,
       default: false,
     },
+
     basePrice: Number,
     rating: {
       type: Number,

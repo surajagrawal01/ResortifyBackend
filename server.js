@@ -149,8 +149,18 @@ const {
 
 //get all the resorts
 app.get("/api/users/resorts", propertyController.list);
+
 // get one resort
 app.get("/api/users/resorts/:id", propertyController.listOne);
+
+// list of my searches
+app.get(
+  "/api/users/resorts/:id/recentsearches",
+  authenticateUser,
+  authorizeUser(["user"]),
+  propertyController.listForMySearches
+);
+app.get("/api/propertyStats", propertyController.Stats);
 // create the resort
 // app.post(
 //   "/api/owners/propertydetails",
@@ -199,7 +209,8 @@ app.delete(
   authorizeUser(["owner"]),
   roomController.delete
 );
-
+// store total room
+app.post("/api/propertydetails/addrooms/:id", propertyController.addRooms);
 // post amenities
 app.post(
   "/api/owners/amenities",
@@ -274,6 +285,21 @@ app.post(
   checkSchema(bookingValidaton),
   bookingCntrl.create
 );
+// changes to get the sum of the bookings as per the month
+app.get(
+  "/api/bookings/calculate",
+  authenticateUser,
+  authorizeUser(["owner"]),
+  bookingCntrl.calculate
+);
+// controller get the status of the bookings
+app.get(
+  "/api/bookingStatus",
+  authenticateUser,
+  authorizeUser(["owner"]),
+  bookingCntrl.Stats
+);
+
 //for changing booking status have to pass query
 app.put(
   "/api/bookings/:id",
@@ -323,7 +349,6 @@ const paymentsCltr = require("./App/controllers/paymentController");
 app.post("/api/create-checkout-session", paymentsCltr.pay);
 app.put("/api/payments/:id/success", paymentsCltr.successUpdate);
 app.put("/api/payments/:id/failed", paymentsCltr.failedUpdate);
-
 
 // request for static data
 app.get("/api/static-data", dataController.list);
@@ -376,7 +401,14 @@ app.get(
   propertyController.generalModeList
 );
 
+app.get(
+  "/api/bookingstats",
+  authenticateUser,
+  authorizeUser(["owner"]),
+  bookingCntrl.Stats
+);
 
+//Chat Support System
 // Admin namespace
 const adminNamespace = io.of('/admin');
 
