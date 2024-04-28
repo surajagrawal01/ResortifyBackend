@@ -3,7 +3,10 @@ const { model, Schema } = require("mongoose");
 const bookingModel = new Schema(
   {
     bookingId: String,
-    userId: Schema.Types.ObjectId,
+    userId: {
+      type:Schema.Types.ObjectId,
+      ref:'User'
+    },
     propertyId: Schema.Types.ObjectId, // Property model
     userName: String,
     bookingCategory: String,

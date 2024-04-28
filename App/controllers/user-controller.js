@@ -1,8 +1,8 @@
 const _ = require("lodash")
+const sendMail  = require("../../Utility.js/nodemailer")
 const bcryptjs = require("bcryptjs")
 const otpgenerator = require("otp-generator")
 const jwt = require("jsonwebtoken")
-const nodemailer = require("nodemailer")
 const User = require("../models/user-model")
 const { validationResult } = require("express-validator")
 const userCntrl = {}
@@ -19,34 +19,6 @@ const OTP_CONFIG = {
 const generateOTP = () => {
     const otp = otpgenerator.generate(OTP_LENGTH, OTP_CONFIG)
     return otp
-}
-
-//mailGeneration
-const sendMail = (userMail, otp) => {
-    let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USERNAME,
-            pass: process.env.EMAIL_PASSWORD
-        }
-    });
-
-
-    const html = `
-<p><b>Hi <br/> Thankyou for registering to Rseortify,</b><br />Your otp ${otp}</p>
-` 
-    async function mailSend() {
-        // send mail with defined transport object
-        const info = await transporter.sendMail({
-            from: process.env.EMAIL_USERNAME, // sender address
-            to: userMail, // list of receivers
-            subject: "Registration Confirmation", // Subject line
-            html: html, // html body
-        });
-    }
-    mailSend().catch(console.error)
 }
 
 //to create a record
@@ -66,7 +38,10 @@ userCntrl.create = async (req, res) => {
         {
             const otp = generateOTP()
             user.otp = otp
-            sendMail(user.email, user.otp)
+            const html = `
+            <p><b>Hi <br/> Thank You for registering to Rseortify,</b><br />Your otp ${otp}</p>
+            ` 
+            sendMail(user.email, html)
         }
         {
             const countRecords = await User.countDocuments()
@@ -120,7 +95,10 @@ userCntrl.resendOTP = async (req, res) => {
         }
         {
             const otp = generateOTP()
-            sendMail(user.email, otp)
+            const html = `
+            <p><b>Hi <br/> Thank You for choosing Rseortify,</b><br />Your otp ${otp}</p>
+            ` 
+            sendMail(user.email, html)
             await User.findOneAndUpdate({ email: user.email }, { $set: { otp: otp } }, { new: true })
             res.send('Otp ReSend')
         }
@@ -218,7 +196,7 @@ userCntrl.updatePassword = async (req, res) => {
 //to get the particular user record
 userCntrl.account = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id)
+        const user = await User.findById(req.user.id).select(['name','email','contactNo','role','recentSearches','_id','myBookings'])
         if (!user) {
             return res.status(404).json({ error: 'record not found' })
         }
@@ -254,14 +232,14 @@ userCntrl.login = async (req, res) => {
     try {
         const user = await User.findOne({ email: email})
         if (!user) {
-            return res.status(404).json({ error: 'invali EmailId/Password' })
+            return res.status(404).json({ error: 'Invalid Email/Password' })
         }
         if(!user.isVerified){
             return res.status(400).json({error:'Email not verified.. Click here to verify'})
         }
         const checkPassword = await bcryptjs.compare(password, user.password)
         if (!checkPassword) {
-            return res.status(404).json({ error: 'invalid EmailId/Password' })
+            return res.status(404).json({ error: 'Invalid Email/Password' })
         }
         const tokenData = {
             id: user._id,

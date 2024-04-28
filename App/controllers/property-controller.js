@@ -372,14 +372,10 @@ propertyController.lists = async (req, res) => {
   const maxPrice = req.query.maxPrice || Infinity
   const minPrice = req.query.minPrice || 0
   const rating = Boolean(req.query.rating) ? req.query.rating : 0 
-
   const ratingQuery = {rating:{$gte:rating}}
   const priceQuery = {basePrice : {$gte:minPrice, $lte: maxPrice}}
-  console.log(priceQuery, ratingQuery)
   const findQuery = {...searchQuery, ...priceQuery, ...ratingQuery}
-  console.log(findQuery)
 
-  console.log(minPrice, maxPrice, rating)
   try {
     const properties = await Property.find(findQuery)
     .skip((page-1) * limit)

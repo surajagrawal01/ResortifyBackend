@@ -1,76 +1,12 @@
 const { validationResult } = require("express-validator")
+const sendMail = require("../../Utility.js/nodemailer")
 const BookingModel = require("../models/booking-model")
 const Property = require("../models/property-model")
 const User = require("../models/user-model")
 const _ = require("lodash")
-const nodemailer = require("nodemailer")
 const RoomType = require("../models/roomType-model")
  
-
 const bookingCntrl = {}
-
-//for sendingMail
-const sendMail = (userMail, html) => {
-    let transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.EMAIL_USERNAME,
-            pass: process.env.EMAIL_PASSWORD
-        }
-    });
-
-    async function mailSend() {
-        // send mail with defined transport object
-        const info = await transporter.sendMail({
-            from: process.env.EMAIL_USERNAME, // sender address
-            to: userMail, // list of receivers
-            subject: "Registration Confirmation", // Subject line
-            html: html, // html body
-        });
-    }
-    mailSend().catch(console.error)
-}
-
-//for new booking
-// bookingCntrl.create = async (req, res) => {
-//     const errors = validationResult(req)
-//     if (!errors.isEmpty()) {
-//         return res.status(404).json({ errors: errors.array() })
-//     }
-//     const body  = _.pick(req.body, ['propertyId','userName','bookingCategory','Date','guests','contactNumber','Rooms','packages','totalAmount'])
-//     try {
-//         const property = await Property.findOne({_id:body.propertyId, isApproved:true})
-//         if(!property){
-//             return res.status(400).json({err:`can't make booking property not approved` })
-//         }
-//         const booking1 = new BookingModel(body)
-//         let str = 'RST'
-//         let count = await BookingModel.find().countDocuments() + 1
-//         const user = await User.findById(req.user.id)
-//         const owner = await User.findOne({ _id: property.ownerId })
-//         booking1.bookingId = str + count
-//         booking1.userId = req.user.id
-//         booking1.userName = user.name
-//         booking1.status = "initiated"
-        
-//         await booking1.save()
-//         res.send("Booking Initiated")
-
-//         const ownerHTMLMsg = `
-//     <p><b>Hi  <br/> There is booking with id: ${booking1.bookingId} </p>
-//     `
-//         const userHTMLMsg = `
-//     <p><b>Hi ${user.name} <br/> We have initiated your booking soon you will receive email once the owner approve your booking </p>
-//     `
-//         sendMail(owner.email, ownerHTMLMsg)
-//         sendMail(user.email, userHTMLMsg)
-//     } catch (err) {
-//         res.status(500).json({ error: 'Internal Server Error' })
-//         console.log(err)
-//     }
-// }
 
 bookingCntrl.create = async (req, res) => {
     const errors = validationResult(req)
@@ -195,12 +131,7 @@ bookingCntrl.changeStatus = async (req, res) => {
             setTimeout(async() => {
                 const booking = await BookingModel.findOne({ _id: bookingId, propertyId: property._id })
                 if (booking.isPaymentDone == 'true') {
-                    const ownerHTMLMsg = `
-                    <p><b>Hi <br/>Pyament Done Booking Confirmed for ${booking.bookingId}.`
-                    sendMail(owner.email, ownerHTMLMsg )
-                    const userHTMLMsg = `
-                    <p><b>Hi ${user.name} <br/> Payment Done Booking Successful ${booking.bookingId}.`
-                    sendMail(user.email, userHTMLMsg)
+                    
                 } else {
                     //to delete the record if payment not done within given period of time
                     const bookingDelete = await BookingModel.findOneAndUpdate({bookingId:booking.bookingId}, {$set:{isDeleted:"true"}}) //change on 4th April
@@ -252,7 +183,12 @@ bookingCntrl.listTodayBookings = async (req, res) => {
     try {
         const rangeQuery = {$gte: new Date(from), $lte: new Date(to)}
         const property = await Property.findOne({ ownerId: req.user.id })
-        const bookings = await BookingModel.find({ propertyId: property._id, createdAt: rangeQuery}).populate('Rooms.roomTypeId',['roomType','_id']).sort({_id:-1})
+        let bookings 
+        if(property){
+            bookings = await BookingModel.find({ propertyId: property._id, createdAt: rangeQuery}).populate('Rooms.roomTypeId',['roomType','_id']).sort({_id:-1})
+        }else{
+            bookings = []
+        }
         res.json(bookings)
     } catch (err) {
         console.log(err)
