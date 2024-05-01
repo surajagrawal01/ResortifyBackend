@@ -9,8 +9,6 @@ const Review = require("../models/review-model");
 const BookingModel = require("../models/booking-model");
 const propertyController = {};
 
-const { ObjectId } = require("mongodb");
-
 // list the resorts
 propertyController.list = async (req, res) => {
   try {
@@ -112,7 +110,6 @@ propertyController.propertycreate = async (req, res) => {
   ]);
   try {
     const property = new Property(body);
-    console.log(property);
     property.ownerId = req.user.id;
     await property.save();
     res.json(property);
