@@ -439,14 +439,14 @@ propertyController.documents = (req, res) => {
 propertyController.lists = async (req, res) => {
   const city = req.query.city;
   const limit = parseInt(req.query.limit);
-  const page = parseInt(req.query.page);
-  const searchQuery = { "location.city": city };
-  const maxPrice = req.query.maxPrice || Infinity;
-  const minPrice = req.query.minPrice || 0;
-  const rating = Boolean(req.query.rating) ? req.query.rating : 0;
-  const ratingQuery = { rating: { $gte: rating } };
-  const priceQuery = { basePrice: { $gte: minPrice, $lte: maxPrice } };
-  const findQuery = { ...searchQuery, ...priceQuery, ...ratingQuery };
+  const page = parseInt(req.query.page)
+  const searchQuery = { "location.city": city }
+  const maxPrice = req.query.maxPrice || Infinity
+  const minPrice = req.query.minPrice || 0
+  const rating = req.query.rating == "null" ? 0 : req.query.rating
+  const ratingQuery = { rating: { $gte: rating } }
+  const priceQuery = { basePrice: { $gte: minPrice, $lte: maxPrice } }
+  const findQuery = { isApproved:true ,...searchQuery, ...priceQuery, ...ratingQuery}
 
   // changes for sort by Sufal
   const order = req.query.order === "undefined" ? "low" : req.query.order;
