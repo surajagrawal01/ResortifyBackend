@@ -9,8 +9,6 @@ const Review = require("../models/review-model");
 const BookingModel = require("../models/booking-model");
 const propertyController = {};
 
-const { ObjectId } = require("mongodb");
-
 // list the resorts
 propertyController.list = async (req, res) => {
   try {
@@ -112,7 +110,6 @@ propertyController.propertycreate = async (req, res) => {
   ]);
   try {
     const property = new Property(body);
-    console.log(property);
     property.ownerId = req.user.id;
     await property.save();
     res.json(property);
@@ -442,14 +439,14 @@ propertyController.documents = (req, res) => {
 propertyController.lists = async (req, res) => {
   const city = req.query.city;
   const limit = parseInt(req.query.limit);
-  const page = parseInt(req.query.page)
-  const searchQuery = { "location.city": city }
-  const maxPrice = req.query.maxPrice || Infinity
-  const minPrice = req.query.minPrice || 0
-  const rating = Boolean(req.query.rating) ? req.query.rating : 0 
-  const ratingQuery = {rating:{$gte:rating}}
-  const priceQuery = {basePrice : {$gte:minPrice, $lte: maxPrice}}
-  const findQuery = {...searchQuery, ...priceQuery, ...ratingQuery}
+  const page = parseInt(req.query.page);
+  const searchQuery = { "location.city": city };
+  const maxPrice = req.query.maxPrice || Infinity;
+  const minPrice = req.query.minPrice || 0;
+  const rating = Boolean(req.query.rating) ? req.query.rating : 0;
+  const ratingQuery = { rating: { $gte: rating } };
+  const priceQuery = { basePrice: { $gte: minPrice, $lte: maxPrice } };
+  const findQuery = { ...searchQuery, ...priceQuery, ...ratingQuery };
 
   // changes for sort by Sufal
   const order = req.query.order === "undefined" ? "low" : req.query.order;
