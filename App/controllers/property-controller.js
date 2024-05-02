@@ -506,4 +506,14 @@ propertyController.Stats = async (req, res) => {
   }
 };
 
+propertyController.propertyExist = async(req,res)=>{
+  try{
+    const response = await Property.findOne({ownerId:req.user.id})
+    res.json(response)
+  }catch(err){
+    console.log(err)
+    res.status(500).json({error:"Internal server error"})
+  }
+}
+
 module.exports = propertyController;

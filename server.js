@@ -135,7 +135,7 @@ const reviewController = require("./App/controllers/reviews-controller");
 const bookingCntrl = require("./App/controllers/booking-controller");
 
 // property validation schema
-const propertyValidationSchema = require("./App/validations/property-validations");
+const {propertyValidationsSchema, generalModelValidationSchema} = require("./App/validations/property-validations");
 //amenities validation schema
 const amenititiesValidationSchema = require("./App/validations/amenities-validations");
 
@@ -181,7 +181,7 @@ app.put(
   "/api/owners/propertydetails/:id",
   authenticateUser,
   authorizeUser(["owner"]),
-  checkSchema(propertyValidationSchema),
+  checkSchema(propertyValidationsSchema),
   propertyController.update
 );
 //delete the resort
@@ -376,25 +376,36 @@ app.post(
   propertyController.documents
 );
 
+//to check property exist or not
+app.get("/api/owners/property",
+  authenticateUser,
+  authorizeUser(['owner']),
+  propertyController.propertyExist
+)
+
 /// for step form
 app.post(
   "/api/owners/propertydetails",
   authenticateUser,
   authorizeUser(["owner"]),
+  checkSchema(propertyValidationsSchema),
   propertyController.propertycreate
 );
 app.post(
   "/api/owners/propertydetails/generalModel",
   authenticateUser,
   authorizeUser(["owner"]),
+  checkSchema(generalModelValidationSchema),
   propertyController.generalModelCreate
 );
+
 app.post(
   "/api/owners/propertydetails/roomtypemodel",
   authenticateUser,
   authorizeUser(["owner"]),
   propertyController.roomtypecreate
 );
+
 app.post(
   "/api/reviewsphotos",
   authenticateUser,
