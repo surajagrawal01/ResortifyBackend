@@ -78,7 +78,8 @@ const bookingValidaton = {
             options:function(val){
                 const checkIn = format(new Date(val), 'dd/MM/yyyy')
                 const todayDate = format(new Date(), 'dd/MM/yyyy')
-                if( new Date(checkIn) > new Date(todayDate) ){
+                console.log(checkIn, todayDate)
+                if( new Date(checkIn) < new Date(todayDate) ){
                     throw new Error("checkIn date should be greater than or equal to today's date")
                 }
                 return true
