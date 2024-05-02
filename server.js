@@ -6,6 +6,9 @@ const { checkSchema } = require("express-validator");
 const multer = require("multer"); //require multer
 const cors = require("cors");
 const app = express();
+const morgan = require('morgan')        //morgan required files
+const path = require('path')            //morgan required files
+const fs = require('fs')   
 
 app.use(cors());
 app.use(express.json());
@@ -29,6 +32,11 @@ const io = new Server(server, {
 })
 
 /////=>suraj
+
+//morgan files
+app.use(morgan('common'))
+let logStream = fs.createWriteStream(path.join('log files','server.log'),{flags:'a'})
+app.use(morgan('common',{stream:logStream}))
 
 //authorization and authentication
 const { authorizeUser, authenticateUser } = require("./App/middleware/auth");
