@@ -1412,3 +1412,7 @@
 ::1 - - [11/May/2024:05:52:42 +0000] "GET /api/today/bookings?from=2024-05-11&to=2024-05-11 HTTP/1.1" 200 2
 ::1 - - [11/May/2024:05:52:42 +0000] "GET /api/bookingStatus HTTP/1.1" 200 3085
 ::1 - - [11/May/2024:05:52:44 +0000] "GET /api/bookings/calculate HTTP/1.1" 200 41
+::1 - - [11/May/2024:06:10:00 +0000] "GET /api/properties/lists?city=Ooty&limit=2&page=1&order=low&minPrice=0&maxPrice=Infinity&rating=null HTTP/1.1" 304 -
+::1 - - [11/May/2024:06:10:12 +0000] "GET /api/properties/lists?city=Ooty&limit=2&page=1&order=low&minPrice=0&maxPrice=Infinity&rating=4 HTTP/1.1" 304 -
+::1 - - [11/May/2024:06:10:46 +0000] "GET /api/properties/lists?city=Ooty&limit=2&page=1&order=low&minPrice=0&maxPrice=Infinity&rating=null HTTP/1.1" 304 -
+::1 - - [11/May/2024:06:10:51 +0000] "GET /api/properties/lists?city=Ooty&limit=2&page=1&order=low&minPrice=0&maxPrice=Infinity&rating=4 HTTP/1.1" 304 -
