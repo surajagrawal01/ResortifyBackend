@@ -46,7 +46,7 @@ userCntrl.create = async (req, res) => {
             const html = `
             <p><b>Hi <br/> Thank You for registering to Rseortify,</b><br />Your otp ${otp}</p>
             ` 
-            sendMail(user.email, html)
+            sendMail(user.email, html, "Registration Confimration")
     }
      {
             const countRecords = await User.countDocuments()
@@ -106,7 +106,7 @@ userCntrl.resendOTP = async (req, res) => {
             const html = `
             <p><b>Hi <br/> Thank You for choosing Rseortify,</b><br />Your otp ${otp}</p>
             ` 
-            sendMail(user.email, html)
+            sendMail(user.email, html, "OTP-Resend")
             await User.findOneAndUpdate({ email: user.email }, { $set: { otp: otp } }, { new: true })
             res.send('Otp ReSend')
         }
@@ -224,7 +224,7 @@ userCntrl.account = async (req, res) => {
   const startIndex = (page - 1) * limit;
   try {
     const user = await User.findById(req.user.id)
-      .populate("recentSearches")
+      .populate("recentSearches",["_id", "rating", "propertyName", "location", "propertyPhotos","basePrice"])
       .populate({
         path: "myBookings",
         populate: {

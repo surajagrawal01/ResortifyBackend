@@ -110,8 +110,8 @@ bookingCntrl.create = async (req, res) => {
     const userHTMLMsg = `
     <p><b>Hi ${user.name} <br/> We have initiated your booking soon you will receive email once the owner approve your booking </p>
     `;
-    sendMail(owner.email, ownerHTMLMsg);
-    sendMail(user.email, userHTMLMsg);
+    sendMail(owner.email, ownerHTMLMsg, "New Booking");
+    sendMail(user.email, userHTMLMsg, "Booking Initiated");
   } catch (err) {
     res.status(500).json({ error: "Internal Server Error" });
     console.log(err);
@@ -180,7 +180,7 @@ bookingCntrl.changeStatus = async (req, res) => {
             const userHTMLMsg = `
             <p><b>Hi ${user.name} <br/> Booking gets approved by owner, please use the <a href=${link}>link</a> to make the payment for your booking on ${String(booking.Date.checkIn).slice(0, 10)} at ${property.propertyName} </p>
             `
-            sendMail(user.email, userHTMLMsg)
+            sendMail(user.email, userHTMLMsg, "Booking Approved")
             res.json(booking)
             setTimeout(async() => {
                 const booking = await BookingModel.findOne({ _id: bookingId, propertyId: property._id })
@@ -191,14 +191,14 @@ bookingCntrl.changeStatus = async (req, res) => {
                     const bookingDelete = await BookingModel.findOneAndUpdate({bookingId:booking.bookingId}, {$set:{isDeleted:"true"}}) //change on 4th April
                     const userHTMLMsg = `
                     <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, You didn't completed the payment so we are giving priority to another one.`
-                    sendMail(user.email, userHTMLMsg)
+                    sendMail(user.email, userHTMLMsg, "Booking Cancelled")
                     console.log('Mail sent for giving priority to another one')
                 }
             }, (1000 * 120))
         } else if (booking.status == 'notApproved') {
             const userHTMLMsg = `
             <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, Booking gets not approved by owner,there are some maintainance work going on.`
-            sendMail(user.email, userHTMLMsg)
+            sendMail(user.email, userHTMLMsg, "Booking UnApproved")
             res.json(booking)
         }
   } catch (err) {
