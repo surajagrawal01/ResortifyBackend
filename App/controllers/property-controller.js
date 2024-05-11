@@ -353,6 +353,7 @@ propertyController.listForMySearches = async (req, res) => {
     );
     //all bookings in this particular range
     const bookings = await BookingModel.find({
+      isDeleted:"false",
       propertyId: id,
       "Date.checkIn": checkInQuery,
       "Date.checkOut": checkOutQuery,

@@ -83,8 +83,8 @@ paymentsCltr.successUpdate=async(req,res)=>{
                     <p><b>Hi ${booking.userId.name} <br/> Payment Done Booking Successful ${updatedBooking.bookingId}. <br/> Thank you for choosing Resotify`
         const ownerHTMLMsg = `
                     <p><b>Hi <br/>Pyament Done Booking Confirmed for ${updatedBooking.bookingId}.`
-        sendMail(booking.userId.email, userHTMLMsg)
-        sendMail(property.ownerId.email, ownerHTMLMsg)
+        sendMail(booking.userId.email, userHTMLMsg, "Payment Successfull")
+        sendMail(property.ownerId.email, ownerHTMLMsg, "Booking Confirmed")
         res.json(updatedPayment)
     }catch(err){
         console.log(err)

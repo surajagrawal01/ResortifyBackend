@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer")
-const sendMail = (email, htmlMsg) => {
+const sendMail = (email, htmlMsg, subject) => {
     let transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 465,
@@ -15,7 +15,7 @@ const sendMail = (email, htmlMsg) => {
         const info = await transporter.sendMail({
             from: process.env.EMAIL_USERNAME, // sender address
             to: email, // list of receivers
-            subject: "Registration Confirmation", // Subject line
+            subject: subject, // Subject line
             html: htmlMsg, // html body
         });
     }
