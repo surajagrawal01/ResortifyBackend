@@ -175,7 +175,7 @@ bookingCntrl.changeStatus = async (req, res) => {
         const property = await Property.findOne({ ownerId: owner._id })
         const booking = await BookingModel.findOneAndUpdate({ _id: bookingId, propertyId: property._id }, { $set: { status: status } }, { new: true })
         const user = await User.findById(booking.userId)
-        const link = `https://resortifybackend.onrender.com/booking/payment/${booking._id}`
+        const link = `https://resortify-frontend.vercel.app/booking/payment/${booking._id}`
         if (booking.status == 'approved') {
             const userHTMLMsg = `
             <p><b>Hi ${user.name} <br/> Booking gets approved by owner, please use the <a href=${link}>link</a> to make the payment for your booking on ${String(booking.Date.checkIn).slice(0, 10)} at ${property.propertyName} </p>
