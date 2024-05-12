@@ -175,7 +175,7 @@ bookingCntrl.changeStatus = async (req, res) => {
         const property = await Property.findOne({ ownerId: owner._id })
         const booking = await BookingModel.findOneAndUpdate({ _id: bookingId, propertyId: property._id }, { $set: { status: status } }, { new: true })
         const user = await User.findById(booking.userId)
-        const link = `http://localhost:3000/booking/payment/${booking._id}`
+        const link = `https://resortifybackend.onrender.com/booking/payment/${booking._id}`
         if (booking.status == 'approved') {
             const userHTMLMsg = `
             <p><b>Hi ${user.name} <br/> Booking gets approved by owner, please use the <a href=${link}>link</a> to make the payment for your booking on ${String(booking.Date.checkIn).slice(0, 10)} at ${property.propertyName} </p>
@@ -194,7 +194,7 @@ bookingCntrl.changeStatus = async (req, res) => {
                     sendMail(user.email, userHTMLMsg, "Booking Cancelled")
                     console.log('Mail sent for giving priority to another one')
                 }
-            }, (1000 * 120))
+            }, (1000 * 600))
         } else if (booking.status == 'notApproved') {
             const userHTMLMsg = `
             <p><b>Hi ${user.name} <br/> Sorry for the inconvenience, Booking gets not approved by owner,there are some maintainance work going on.`
