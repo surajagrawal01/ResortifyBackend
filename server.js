@@ -25,7 +25,7 @@ const adminSocketId = 'admin'; // Fixed socket ID for admin
 
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: "https://resortify-frontend.vercel.app",
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -434,21 +434,21 @@ const adminNamespace = io.of('/admin');
 // Event listener for admin connections
 adminNamespace.on('connection', (socket) => {
     // Emit event when admin socket connects
-    console.log('Admin connected');
+    // console.log('Admin connected');
 
     //to join admin to adminSocketId
     socket.join(adminSocketId)
 
     // Handle admin messages
     socket.on('adminMessage', (message) => {
-        console.log('Admin message:', message);
+        // console.log('Admin message:', message);
         // Broadcast admin message to all connected users
         io.emit('adminMessage', message);
     });
 
     socket.on('admin_message', (data) => {
         const { socketId, adminMsg } = data
-        console.log(socketId, adminMsg)
+        // console.log(socketId, adminMsg)
 
         io.to(socketId).emit('admin_response', { socketId, adminMsg })
     })
@@ -461,19 +461,19 @@ adminNamespace.on('connection', (socket) => {
 
 
 io.on("connection", (socket) => {
-    console.log("user connected", socket.id)
+    // console.log("user connected", socket.id)
 
     // Store the socket ID in the map
     socket.emit('welcome_msg','Welcome to Resotify...')
     adminNamespace.to(adminSocketId).emit('new_user', socket.id);
 
     socket.on("disconnect", () => {
-        console.log("user Disconnected", socket.id)
+        // console.log("user Disconnected", socket.id)
         adminNamespace.to(adminSocketId).emit('user_disconnected', socket.id);
     })
 
     socket.on('user_message', (data) => {
-        console.log('User message:', data);
+        // console.log('User message:', data);
         // Forward user message to admin
         adminNamespace.to(adminSocketId).emit('userMessage', data);
     });

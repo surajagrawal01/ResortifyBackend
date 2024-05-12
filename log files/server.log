@@ -1423,3 +1423,4 @@
 ::1 - - [11/May/2024:07:40:43 +0000] "POST /api/users/login HTTP/1.1" 200 201
 ::1 - - [11/May/2024:07:40:44 +0000] "GET /api/users/account HTTP/1.1" 200 5724
 ::1 - - [11/May/2024:10:49:15 +0000] "GET /api/properties/lists?city=Bangalore&limit=2&page=1&order=low&minPrice=0&maxPrice=Infinity&rating=null HTTP/1.1" 200 2415
+::ffff:127.0.0.1 - - [12/May/2024:06:03:48 +0000] "GET /api/users/resorts HTTP/1.1" 200 18795
