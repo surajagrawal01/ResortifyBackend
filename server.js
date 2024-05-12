@@ -12,7 +12,7 @@ const fs = require('fs')
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
+app.use('/images', express.static('public/images'));
 const port = process.env.PORT || 3060;
 //databaseConfiguration
 const configDb = require("./config/db");
