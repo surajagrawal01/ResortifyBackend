@@ -47,8 +47,8 @@ paymentsCltr.pay = async(req,res)=>{
                 quantity: 1
             }],
             mode:"payment",
-            success_url:"https://resortifybackend.onrender.com/success",
-            cancel_url: "https://resortifybackend.onrender.com/cancel",
+            success_url:"https://resortify-frontend.vercel.app/success",
+            cancel_url: "https://resortify-frontend.vercel.app/cancel",
             customer : customer.id
         })
         
