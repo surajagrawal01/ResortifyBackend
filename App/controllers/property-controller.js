@@ -7,6 +7,8 @@ const { validationResult } = require("express-validator");
 const _ = require("lodash");
 const Review = require("../models/review-model");
 const BookingModel = require("../models/booking-model");
+const {uploader} = require("../../server")
+const fs = require('fs')
 const propertyController = {};
 
 // list the resorts
@@ -407,33 +409,40 @@ propertyController.adminApprove = async (req, res) => {
 propertyController.photos = async (req, res) => {
   try {
     const property = await Property.findOne({ ownerId: req.user.id });
-    const arr = [];
-    if (Array.isArray(req.files)) {
-      req.files.forEach((ele) => {
-        arr.push(ele.filename);
-      });
-      property.propertyPhotos = arr;
+    const urls = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = file;
+      const newPath = await uploader(path, "Images"); // Corrected to await the uploader function
+      urls.push(newPath);
+      fs.unlinkSync(path);
+    }
+      property.propertyPhotos = urls;
       await property.save();
       return res.json(property);
-    } else {
-      return res.status(400).json("error in multer");
-    }
   } catch (err) {
     console.log(err);
   }
 };
 
-propertyController.documents = (req, res) => {
-  const arr = [];
-  if (Array.isArray(req.files)) {
-    req.files.forEach((ele) => {
-      arr.push(ele.filename);
-    });
-    return res.json(arr);
-  } else {
-    return res.status(400).json("error in multer");
+propertyController.documents = async(req, res) => {
+  try{
+    const urls = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = file;
+      const newPath = await uploader(path, "Images"); // Corrected to await the uploader function
+      urls.push(newPath);
+      fs.unlinkSync(path);
+    }
+
+    res.json(urls);
+  }catch(err){
+    console.log(err)
+    res.status(500).json({error:'Internal Server Error'})
   }
 };
+
 
 //based on query - By Suraj on 04th April 2024
 
