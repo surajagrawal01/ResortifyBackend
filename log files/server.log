@@ -1428,3 +1428,12 @@
 ::ffff:127.0.0.1 - - [12/May/2024:06:14:32 +0000] "GET /api/users/resorts HTTP/1.1" 304 -
 ::ffff:127.0.0.1 - - [12/May/2024:06:14:36 +0000] "GET /api/users/resorts HTTP/1.1" 304 -
 ::ffff:127.0.0.1 - - [12/May/2024:06:19:01 +0000] "GET /api/users/resorts HTTP/1.1" 304 -
+::1 - - [12/May/2024:15:54:34 +0000] "POST /post-images HTTP/1.1" 500 1287
+::1 - - [12/May/2024:16:01:46 +0000] "POST /post-images HTTP/1.1" 200 327
+::1 - - [12/May/2024:16:18:29 +0000] "POST /api/users/login HTTP/1.1" 200 201
+::1 - - [12/May/2024:16:19:22 +0000] "POST //api/reviewsphotos HTTP/1.1" 404 158
+::1 - - [12/May/2024:16:19:29 +0000] "POST /api/reviewsphotos HTTP/1.1" 500 1287
+::1 - - [12/May/2024:16:20:18 +0000] "POST /api/reviewsphotos HTTP/1.1" 500 33
+::1 - - [12/May/2024:16:21:41 +0000] "POST /api/reviewsphotos HTTP/1.1" 500 33
+::1 - - [12/May/2024:16:22:16 +0000] "POST /api/reviewsphotos HTTP/1.1" 200 327
+::1 - - [13/May/2024:05:18:37 +0000] "POST /api/reviewsphotos HTTP/1.1" 200 191
