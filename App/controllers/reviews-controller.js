@@ -102,17 +102,7 @@ reviewController.listOne = async (req, res) => {
     res.status(500).json({ error: "internal server error" });
   }
 };
-// reviewController.photos = (req, res) => {
-//   const arr = [];
-//   if (Array.isArray(req.files)) {
-//     req.files.forEach((ele) => {
-//       arr.push(ele.filename);
-//     });
-//     return res.json(arr);
-//   } else {
-//     return res.status(400).json("error in multer");
-//   }
-// };
+
 
 reviewController.photos = async(req, res) => {
   try{

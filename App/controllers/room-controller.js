@@ -2,6 +2,8 @@ const RoomType = require("../models/roomType-model");
 const User = require("../models/user-model");
 const Room = require("../models/room-model");
 const { validationResult } = require("express-validator");
+const {uploader} = require("../../server")
+const fs = require('fs')
 const roomController = {};
 
 roomController.create = async (req, res) => {
@@ -71,15 +73,22 @@ roomController.delete = async (req, res) => {
     res.json({ error: "internal server error" });
   }
 };
-roomController.photos = (req, res) => {
-  const arr = [];
-  if (Array.isArray(req.files)) {
-    req.files.forEach((ele) => {
-      arr.push(ele.filename);
-    });
-    return res.json(arr);
-  } else {
-    return res.status(400).json("error in multer");
+
+roomController.photos = async(req, res) => {
+  try{
+    const urls = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = file;
+      const newPath = await uploader(path, "Images"); // Corrected to await the uploader function
+      urls.push(newPath);
+      fs.unlinkSync(path);
+    }
+    res.json(urls)
+  }catch(err){
+      console.log(err)
+      res.json('Internal Server Error')
   }
 };
+
 module.exports = roomController;
