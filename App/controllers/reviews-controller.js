@@ -5,6 +5,8 @@ const reviewController = {};
 const Property = require("../models/property-model");
 const { validationResult } = require("express-validator");
 const Review = require("../models/review-model");
+const {uploader} = require("../../server")
+const fs = require('fs')
 
 reviewController.create = async (req, res) => {
   const errors = validationResult(req);
@@ -100,15 +102,34 @@ reviewController.listOne = async (req, res) => {
     res.status(500).json({ error: "internal server error" });
   }
 };
-reviewController.photos = (req, res) => {
-  const arr = [];
-  if (Array.isArray(req.files)) {
-    req.files.forEach((ele) => {
-      arr.push(ele.filename);
-    });
-    return res.json(arr);
-  } else {
-    return res.status(400).json("error in multer");
+// reviewController.photos = (req, res) => {
+//   const arr = [];
+//   if (Array.isArray(req.files)) {
+//     req.files.forEach((ele) => {
+//       arr.push(ele.filename);
+//     });
+//     return res.json(arr);
+//   } else {
+//     return res.status(400).json("error in multer");
+//   }
+// };
+
+reviewController.photos = async(req, res) => {
+  try{
+    const urls = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = file;
+      const newPath = await uploader(path, "Images"); // Corrected to await the uploader function
+      urls.push(newPath);
+      fs.unlinkSync(path);
+    }
+
+    res.json(urls);
+  }catch(err){
+    console.log(err)
+    res.status(500).json({error:'Internal Server Error'})
   }
 };
+
 module.exports = reviewController;

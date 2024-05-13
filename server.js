@@ -113,13 +113,38 @@ app.get("/api/users/account", authenticateUser, userCntrl.account);
 //multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    return cb(null, "./public/images");
+    cb(null, "./public/images");
   },
   filename: function (req, file, cb) {
-    return cb(null, `${Date.now()}-${file.originalname}`);
+    cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
 const upload = multer({ storage });
+
+const cloudinary = require("cloudinary").v2;
+cloudinary.config({ 
+  cloud_name: process.env.CLOUD_NAME, 
+  api_key: process.env.CLOUD_API_KEY, 
+  api_secret: process.env.CLOUD_SECRET_KEY
+});
+
+const uploader = (file, folder) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload(
+      file,
+      {
+        resource_type: "auto", // Corrected from resource: auto
+        folder: folder
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result.url);
+      }
+    );
+  });
+};
+
+module.exports = {uploader: uploader}
 
 // property controlller
 const propertyController = require("./App/controllers/property-controller");
