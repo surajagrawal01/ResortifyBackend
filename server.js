@@ -9,20 +9,22 @@ const app = express();
 const morgan = require('morgan')        //morgan required files
 const path = require('path')            //morgan required files
 const fs = require('fs')   
+const cloudinary = require("cloudinary").v2;
 
 app.use(cors());
 app.use(express.json());
 app.use('/images', express.static('./public/images'));
 const port = process.env.PORT || 3060;
+
 //databaseConfiguration
 const configDb = require("./config/db");
 configDb();
 
-
+//server creation
 const server = http.createServer(app)
 const adminSocketId = 'admin'; // Fixed socket ID for admin
 
-
+//web socket connection
 const io = new Server(server, {
     cors: {
         origin: "https://resortify-frontend.vercel.app",
@@ -30,8 +32,6 @@ const io = new Server(server, {
         credentials: true
     }
 })
-
-/////=>suraj
 
 //morgan files
 app.use(morgan('common'))
@@ -61,28 +61,33 @@ app.post(
   checkSchema(userRegistrationValidation),
   userCntrl.create
 );
+
 app.post(
   "/api/users/verifyEmail",
   checkSchema(verifyEmailValidationSchema),
   userCntrl.verifyEmail
 );
+
 //for reverification of email while login if not verified and for forgot password mail to verify mail
 app.post(
   "/api/users/reVerifiyEmail",
   checkSchema(resendOTPEmailValidationSchema),
   userCntrl.resendOTP
 );
+
 //for forgot password -> mail and otp and new password
 app.put(
   "/api/users/forgotPassword",
   checkSchema(forgotPasswordValidation),
   userCntrl.forgotPassword
 );
+
 app.post(
   "/api/users/login",
   checkSchema(loginValidationSchema),
   userCntrl.login
 );
+
 //for update
 app.put(
   "/api/users",
@@ -90,8 +95,10 @@ app.put(
   checkSchema(userUpdatingDetailsValidationSchema),
   userCntrl.update
 );
+
 //for delete
 app.delete("/api/users", authenticateUser, userCntrl.destroy);
+
 //for updating password
 app.put(
   "/api/users/updatePassword",
@@ -99,6 +106,7 @@ app.put(
   checkSchema(userUpdatingPassword),
   userCntrl.updatePassword
 );
+
 //for all users lists
 app.get(
   "/api/users",
@@ -106,10 +114,10 @@ app.get(
   authorizeUser(["admin"]),
   userCntrl.lists
 );
+
 //for account
 app.get("/api/users/account", authenticateUser, userCntrl.account);
 
-//sufal
 //multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -121,7 +129,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-const cloudinary = require("cloudinary").v2;
+//cloudinary configuration
 cloudinary.config({ 
   cloud_name: process.env.CLOUD_NAME, 
   api_key: process.env.CLOUD_API_KEY, 
@@ -193,6 +201,7 @@ app.get(
   authorizeUser(["user"]),
   propertyController.listForMySearches
 );
+
 app.get("/api/propertyStats", propertyController.Stats);
 // create the resort
 // app.post(
@@ -201,6 +210,7 @@ app.get("/api/propertyStats", propertyController.Stats);
 //   authorizeUser(["owner"]),
 //   propertyController.create
 // );
+
 //update the resort
 app.put(
   "/api/owners/propertydetails/:id",
@@ -209,6 +219,7 @@ app.put(
   checkSchema(propertyValidationsSchema),
   propertyController.update
 );
+
 //delete the resort
 app.delete(
   "/api/owners/propertydetails/:id",
@@ -216,6 +227,7 @@ app.delete(
   authorizeUser(["owner"]),
   propertyController.delete
 );
+
 // admin approval of the resort
 app.put(
   "/api/admin/propertydetails/:id",
@@ -235,6 +247,7 @@ app.put(
   authorizeUser(["owner"]),
   roomController.update
 );
+
 // delete a room
 app.delete(
   "/api/owners/propertydetails/room/:id",
@@ -242,8 +255,10 @@ app.delete(
   authorizeUser(["owner"]),
   roomController.delete
 );
+
 // store total room
 app.post("/api/propertydetails/addrooms/:id", propertyController.addRooms);
+
 // post amenities
 app.post(
   "/api/owners/amenities",
@@ -252,6 +267,7 @@ app.post(
   checkSchema(amenititiesValidationSchema),
   amenityController.create
 );
+
 // update amenities
 app.put(
   "/api/owners/amenities/:id",
@@ -260,6 +276,7 @@ app.put(
   checkSchema(amenititiesValidationSchema),
   amenityController.update
 );
+
 // delete amenities
 app.delete(
   "/api/owners/amenities/:id",
@@ -267,6 +284,7 @@ app.delete(
   authorizeUser(["admin"]),
   amenityController.destroy
 );
+
 //list all amenities
 app.get(
   "/api/owners/amenities",
@@ -274,6 +292,7 @@ app.get(
   authorizeUser(["owner", "admin"]),
   amenityController.list
 );
+
 //list one amentity
 app.get(
   "/api/owners/amenities/:id",
@@ -284,6 +303,7 @@ app.get(
 
 //get one reviews of one property
 app.get("/api/reviews/:id", reviewController.listOne);
+
 // post the review
 app.post(
   "/api/users/reviews/:id",
@@ -453,6 +473,7 @@ app.get(
 );
 
 //Chat Support System
+
 // Admin namespace
 const adminNamespace = io.of('/admin');
 
