@@ -472,6 +472,11 @@ app.get(
   bookingCntrl.Stats
 );
 
+//first time connection
+app.get("/", (req, res)=>{
+  res.json('Connection Successfull')
+})
+
 //Chat Support System
 
 // Admin namespace
