@@ -474,7 +474,7 @@ app.get(
 
 //first time connection
 app.get("/", (req, res)=>{
-  res.json('Connection Successfull 29th May 2024')
+  res.json('Connection Successfull')
 })
 
 //Chat Support System
